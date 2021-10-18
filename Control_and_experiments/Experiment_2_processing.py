@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-def plot_design(x_label = "", y_label = "", plot_title = "", labels = [], xlim = None, ylim = None, show = True):
+def plot_design(x_label = "", y_label = "", plot_title = "", labels = [], xlim = None, ylim = None, show = True, save = False, filename = ""):
     plt.grid(color='black', linestyle='--', linewidth=1.0, alpha = 0.7)
     plt.grid(True)
 
@@ -18,6 +18,9 @@ def plot_design(x_label = "", y_label = "", plot_title = "", labels = [], xlim =
 
 
     plt.legend(labels)    
+
+    if save:
+        plt.savefig(filename+".png")
 
     if show:
         plt.show()
@@ -42,24 +45,26 @@ def plot_state_and_force(filename, wall_detection = True):
     print("Time for save", np.average(dt), "[sec]")
     print("Frequency", 1/np.average(dt), "[Hz]")
 
-    # plt.figure(figsize=[15, 10])
-    # plt.tight_layout()
+    plt.figure(figsize=[15, 10])
+    plt.tight_layout()
 
-    # plt.subplot(3,1,1)
-    # plt.plot(t, x/(2*np.pi), color = 'red',lw = 3.)
-    # plot_design(plot_title = "Motor state", y_label = labels[2], show=False)
+    plt.subplot(3,1,1)
+    plt.plot(t, x/(2*np.pi), color = 'red',lw = 3.)
+    plot_design(plot_title = "Motor state", y_label = labels[2], show=False)
 
-    # plt.subplot(3,1,2)
-    # plt.plot(t, dx, color = 'red',lw = 3.)
-    # plot_design(y_label = labels[3],show=False)
+    plt.subplot(3,1,2)
+    plt.plot(t, dx, color = 'red',lw = 3.)
+    plot_design(y_label = labels[3],show=False)
 
-    # plt.subplot(3,1,3)
-    # plt.plot(t, I)
-    # if wall_detection:
-    #     plot_design(x_label = labels[1], y_label = labels[4])
-    # else:
-    #     plt.plot(t, I_des, color = 'black', lw = 3., ls = '--')
-    #     plot_design(x_label = labels[1], y_label = labels[4],labels = ["Real data", "Desired data"])
+    plt.subplot(3,1,3)
+    plt.plot(t, I)
+    if wall_detection:
+        plot_design(x_label = labels[1], y_label = labels[4], save = True, filename = filename[:-4]+"_current_force")
+    else:
+        plt.plot(t, I_des, color = 'black', lw = 3., ls = '--')
+        plot_design(x_label = labels[1], y_label = labels[4],labels = ["Real data", "Desired data"], save = True, filename = filename[:-4]+"_current_force")
+
+        
 
 
     plt.figure(figsize=[10, 10])
@@ -72,10 +77,10 @@ def plot_state_and_force(filename, wall_detection = True):
     plt.subplot(2,1,2)
     plt.plot(t, I)
     if wall_detection:
-        plot_design(x_label = labels[1], y_label = labels[4],plot_title="Motor current versus time")
+        plot_design(x_label = labels[1], y_label = labels[4],plot_title="Motor current versus time", save = True, filename = filename[:-4]+"_motor_state")
     else:
         # plt.plot(t, I_des, color = 'black', lw = 3., ls = '--')
-        plot_design(x_label = labels[1], y_label = labels[4],plot_title="Motor current versus time",labels = ["Real data", "Desired data"])
+        plot_design(x_label = labels[1], y_label = labels[4],plot_title="Motor current versus time",labels = ["Real data", "Desired data"], save = True, filename = filename[:-4]+"_motor_state")
     return
 
 I0 = 95
