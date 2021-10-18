@@ -85,22 +85,24 @@ def velocity_control(stand_data, motor, sensors, q_des, dq_des = 0, gains = {"kp
     motor.pause()
     return q, dq, t, stand_data
 
-def chirp_x(t, A,  dw, w, x0 = 0):
-    return A * np.sin(dw * t**2/2 + w * t) + x0
-
-def chirp_dx(t, A,  dw, w):
-    return A * np.cos(dw * t**2/2 + w * t) * (dw * t + w)
+def chirp(t, A, w0, wf, tf, x0):
+    k = (wf - w0) / tf
+    w = k*t + w0
+    return A * np.sin(w * t * 2*np.pi) + x0
 
 stand_param = {'interface':'can0', 'id_motor':0x141, 'current_limit':400}
 motor, sensors, stand_data = run_stand(stand_param)
 _, _, t, stand_data, I, F = get_state(stand_data, motor, sensors, get_I_F=True)
 
-A = 80
-dw = 0.03 *2*np.pi
-w = 0.2 *2*np.pi
-tf = 20
 
-experiment_name = "Chirp"
+parameters = "_5_05"
+experiment_name = "Chirp" + parameters
+wall_detection_name = "Wall_detection" + parameters
+
+A = 80
+w0 = 0
+wf = 5
+tf = 120
 
 const_speed = 30
 F_constr = 0.06
@@ -119,13 +121,13 @@ try:
         motor.set_current(I0)
         _, _, t, stand_data, I, F = get_state(stand_data, motor, sensors, get_I_F=True)
 
-    save_data("experiment_results/Experiment_2/Wall_detection"+"_I0_"+str(int(I0))+"_A_"+str(A)+".csv", stand_data)
+    save_data("experiment_results/Experiment_2/"+wall_detection_name+"_A_"+str(A)+".csv", stand_data)
     
     t0 = t
     stand_data = reset_data()
     _, _, t, stand_data, I, F = get_state(stand_data, motor, sensors, t0=t0, I_des=I0, get_I_F=True)
     while t<tf:
-        I_des = chirp_x(t, A,  dw, w, x0 = I0)
+        I_des = chirp(t, A, w0, wf, tf, I0)
         motor.set_current(I_des)
         _, _, t, stand_data, I, F = get_state(stand_data, motor, sensors, t0=t0, I_des=I_des, get_I_F=True)
 
@@ -134,7 +136,7 @@ except KeyboardInterrupt:
     motor.pause()
     print("Exit...")
 finally:
-    save_data("experiment_results/Experiment_2/"+experiment_name+"_I0_"+str(int(I0))+"_A_"+str(A)+".csv", stand_data)
+    save_data("experiment_results/Experiment_2/"+experiment_name+"_A_"+str(A)+".csv", stand_data)
 
     q, dq, t, stand_data = velocity_control(stand_data, motor, sensors, 0)
     print("Actuator at the initial position")

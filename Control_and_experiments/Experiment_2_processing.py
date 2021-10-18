@@ -37,24 +37,29 @@ def plot_state_and_force(filename, wall_detection = True):
     T = data[:,7]
     F = data[:,8]
     I_des = data[:,11]
-    plt.figure(figsize=[15, 10])
-    plt.tight_layout()
 
-    plt.subplot(3,1,1)
-    plt.plot(t, x/(2*np.pi), color = 'red',lw = 3.)
-    plot_design(plot_title = "Motor state", y_label = labels[2], show=False)
+    dt = np.diff(t)
+    print("Time for save", np.average(dt), "[sec]")
+    print("Frequency", 1/np.average(dt), "[Hz]")
 
-    plt.subplot(3,1,2)
-    plt.plot(t, dx, color = 'red',lw = 3.)
-    plot_design(y_label = labels[3],show=False)
+    # plt.figure(figsize=[15, 10])
+    # plt.tight_layout()
 
-    plt.subplot(3,1,3)
-    plt.plot(t, I)
-    if wall_detection:
-        plot_design(x_label = labels[1], y_label = labels[4])
-    else:
-        plt.plot(t, I_des, color = 'black', lw = 3., ls = '--')
-        plot_design(x_label = labels[1], y_label = labels[4],labels = ["Real data", "Desired data"])
+    # plt.subplot(3,1,1)
+    # plt.plot(t, x/(2*np.pi), color = 'red',lw = 3.)
+    # plot_design(plot_title = "Motor state", y_label = labels[2], show=False)
+
+    # plt.subplot(3,1,2)
+    # plt.plot(t, dx, color = 'red',lw = 3.)
+    # plot_design(y_label = labels[3],show=False)
+
+    # plt.subplot(3,1,3)
+    # plt.plot(t, I)
+    # if wall_detection:
+    #     plot_design(x_label = labels[1], y_label = labels[4])
+    # else:
+    #     plt.plot(t, I_des, color = 'black', lw = 3., ls = '--')
+    #     plot_design(x_label = labels[1], y_label = labels[4],labels = ["Real data", "Desired data"])
 
 
     plt.figure(figsize=[10, 10])
@@ -69,16 +74,22 @@ def plot_state_and_force(filename, wall_detection = True):
     if wall_detection:
         plot_design(x_label = labels[1], y_label = labels[4],plot_title="Motor current versus time")
     else:
-        plt.plot(t, I_des, color = 'black', lw = 3., ls = '--')
+        # plt.plot(t, I_des, color = 'black', lw = 3., ls = '--')
         plot_design(x_label = labels[1], y_label = labels[4],plot_title="Motor current versus time",labels = ["Real data", "Desired data"])
     return
 
-I0 = 94
+I0 = 95
 A = 80
+parameters = "_5_05"
+experiment_name = "Chirp" + parameters
+wall_detection_name = "Wall_detection" + parameters
 
-filename_wall = "experiment_results/Experiment_2/Wall_detection"+"_I0_"+str(int(I0))+"_A_"+str(A)+".csv"
-plot_state_and_force(filename_wall)
+
+# filename_wall = "experiment_results/Experiment_2/"+wall_detection_name+"_A_"+str(A)+".csv"
+# plot_state_and_force(filename_wall)
 
 
-filename_chirp = "experiment_results/Experiment_2/Chirp_I0_"+str(int(I0))+"_A_"+str(A)+".csv"
+filename_chirp = "experiment_results/Experiment_2/"+experiment_name+"_A_"+str(A)+".csv"
+
+# filename_chirp = "experiment_results/Experiment_2/Chirp_5_05_A_50.csv"
 plot_state_and_force(filename_chirp, wall_detection=False)

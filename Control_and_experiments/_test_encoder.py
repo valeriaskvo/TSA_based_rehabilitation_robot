@@ -72,7 +72,7 @@ try:
         dt = dt + ti - t
         t = ti
         # print("A:", force_a, "B:", force_b)
-        print(force_b)
+        print(linear_displacement, rotation_angle*180/3.14)
 
         sleep(0.05)
 except KeyboardInterrupt:
