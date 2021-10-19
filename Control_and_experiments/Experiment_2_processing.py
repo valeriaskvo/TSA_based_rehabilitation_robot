@@ -83,9 +83,9 @@ def plot_state_and_force(filename, wall_detection = True):
         plot_design(x_label = labels[1], y_label = labels[4],plot_title="Motor current versus time",labels = ["Real data", "Desired data"], save = True, filename = filename[:-4]+"_motor_state")
     return
 
-I0 = 95
-A = 80
-parameters = "_5_05"
+I0 = 90
+A = 100
+parameters = "_exp_3"
 experiment_name = "Chirp" + parameters
 wall_detection_name = "Wall_detection" + parameters
 

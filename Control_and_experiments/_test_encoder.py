@@ -71,8 +71,8 @@ try:
         ti = perf_counter()
         dt = dt + ti - t
         t = ti
-        # print("A:", force_a, "B:", force_b)
-        print(linear_displacement, rotation_angle*180/3.14)
+        msg = "Force A: {:f}; Force B: {:-f}; Linear encoder: {:-f}; Angular encoder: {:-f}".format(force_a, force_b, linear_displacement, rotation_angle*180/3.1415926)
+        print(msg)
 
         sleep(0.05)
 except KeyboardInterrupt:
