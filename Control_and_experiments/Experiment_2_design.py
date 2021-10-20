@@ -7,6 +7,9 @@ import pandas as pd
 
 
 def reset_data():
+    global START_TIME
+    START_TIME = perf_counter()
+
     stand_data = {"Time [sec]": [],
                   "Motor angle [rad]": [],
                   "Motor speed [rad/sec]": [],
@@ -44,14 +47,11 @@ def run_stand(stand_param):
 
     stand_data = reset_data()
 
-    global START_TIME
-    START_TIME = perf_counter()
-
     return motor, sensors, stand_data
 
 
-def get_state(stand_data, motor, sensors, t0=0, q_des=0, dq_des=0, I_des=0, w_des=False, w0=None, wf=None, tf=None, get_I_F=False):
-    t = perf_counter() - t0 - START_TIME
+def get_state(stand_data, motor, sensors, q_des=0, dq_des=0, I_des=0, w_des=False, w0=None, wf=None, tf=None, get_I_F=False):
+    t = perf_counter() - START_TIME
     q, dq, I = motor.state['angle'], motor.state['speed'], motor.state['current']
     linear_displacement, rotation_angle = sensors.read_encoders()
     force_a, force_b = sensors.read_force()
@@ -117,7 +117,7 @@ motor, sensors, stand_data = run_stand(stand_param)
 _, _, t, stand_data, I, F = get_state(stand_data, motor, sensors, get_I_F=True)
 
 
-parameters = "_exp_2"
+parameters = "_angle_2_exp_1"
 experiment_name = "Chirp" + parameters
 wall_detection_name = "Wall_detection" + parameters
 
@@ -136,7 +136,7 @@ try:
         _, _, t, stand_data, I, F = get_state(
             stand_data, motor, sensors, get_I_F=True)
 
-    n = len(stand_data["Motor current [units]"])-n_avg
+    # n = len(stand_data["Motor current [units]"])-n_avg
     # I0 = sum(stand_data["Motor current [units]"][n:])/n_avg + A/2
     I0 = 90
     print("I0: = ", I0)
@@ -147,19 +147,17 @@ try:
         _, _, t, stand_data, I, F = get_state(
             stand_data, motor, sensors, get_I_F=True)
 
-    save_data("experiment_results/Experiment_2/" +
-              wall_detection_name+"_A_"+str(A)+".csv", stand_data)
+    # save_data("experiment_results/Experiment_2/" +
+    #           wall_detection_name+"_A_"+str(A)+".csv", stand_data)
 
-    t0 = t
     stand_data = reset_data()
     _, _, t, stand_data, I, F = get_state(
-        stand_data, motor, sensors, t0=t0, I_des=I0, w_des=True, w0=w0, wf=wf, tf=tf, get_I_F=True)
+        stand_data, motor, sensors, I_des=I0, w_des=True, w0=w0, wf=wf, tf=tf, get_I_F=True)
     while t < tf:
         I_des = chirp(t, A, w0, wf, tf, I0)
         motor.set_current(I_des)
         _, _, t, stand_data, I, F = get_state(
-            stand_data, motor, sensors, t0=t0, I_des=I_des, w_des=True, w0=w0, wf=wf, tf=tf, get_I_F=True)
-
+            stand_data, motor, sensors, I_des=I_des, w_des=True, w0=w0, wf=wf, tf=tf, get_I_F=True)
 
 except KeyboardInterrupt:
     motor.pause()
