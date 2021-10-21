@@ -45,66 +45,99 @@ def filtering_data(x, t, t_ideal):
 
 def data_process(data, t_ideal, N):
     t = data[:,1]
-    x = data[:,2]
-    dx = data[:,3]
     I = data[:,4]
     F = data[:,8]
-    I_des = data[:,11]
-    freq = data[:,12]
+    theta = data[:,6]
 
-    I_des_filt = filtering_data(I_des, t, t_ideal)
     F_filt = filtering_data(F, t, t_ideal)
     I_filt = filtering_data(I, t, t_ideal)
 
-
-    I_des_fft = np.abs(fft(I_des_filt))[1:N//2]
     F_fft = np.abs(fft(F_filt))[1:N//2]
     I_fft = np.abs(fft(I_filt))[1:N//2]
     TF = F_fft/I_fft
-    return F_fft, I_fft, TF
-    
 
+    theta_avg = np.rad2deg(np.mean(theta))
+    return F_fft, I_fft, TF, theta_avg
+
+def plot_results(F_fft, I_fft, TF, theta, freq, filename):
+    default_path = "experiment_results/Experiment_2/FFT_results/"
+    print(theta)
+    TF_filt = filtering_data(TF, freq, freq)
+
+    # Первый график
+
+    plt.figure(figsize=[10, 10])
+    plt.subplot(2,1,1)
+    plt.plot(freq, F_fft, "r", lw=1)
+    plot_design(y_label="Amplitude for handle", xlim = [0,10], show=False)
+
+    plt.subplot(2,1,2)
+    plt.plot(freq, I_fft, "r", lw=1)
+    plot_design(y_label="Amplitude for real current", x_label="Frequency [Hz]", xlim = [0,10], save=True, filename=default_path+"p1_"+filename)
+
+    # Второй график
+
+    plt.figure(figsize=[10, 5])
+    plt.plot(freq, TF, color = 'red', alpha = 0.2, linewidth = 1)
+    plt.plot(freq, TF_filt, color = "red")
+    plot_design(y_label="Amplitude for transfer function", x_label="Frequency [Hz]", xlim = [0,10], ylim=[0,0.003], save=True, filename=default_path+"p2_"+filename)
+
+    plt.figure(figsize=[10, 5])
+    plt.xlim([0.1, 10])
+    plt.semilogx(freq, 20.0*np.log10(abs(TF)), color = 'red', alpha = 0.2, linewidth = 1)
+    plt.semilogx(freq, 20.0*np.log10(abs(TF_filt)), color = 'red', linewidth = 2.5)
+    plot_design(y_label="Magnitude [dB]", x_label="Frequency [Hz]", save=True, filename=default_path+"p3_"+filename)
+
+    return TF_filt
+
+
+angle_i = 1
 i = 1
-filename = "experiment_results/Experiment_2/Chirp_exp_"+str(i)+"_A_100.csv"
+filename = "experiment_results/Experiment_2/Chirp_angle_"+str(angle_i)+"_exp_"+str(i)+"_A_100.csv"
+data = pd.read_csv(filename)
+labels = list(data.columns.values)
+data = data.to_numpy()
 
 N = 90000
 tf = 120
 t_ideal = np.linspace(0, tf, N)
 freq = fftfreq(N, tf/N)[1:N//2]
 
-data = pd.read_csv(filename)
-labels = list(data.columns.values)
-data = data.to_numpy()
+# F_fft, I_fft, TF, theta = data_process(data, t_ideal, N)
+F_fft_gen = np.zeros(freq.shape)
+I_fft_gen = np.zeros(freq.shape)
+TF_gen = np.zeros(freq.shape)
+theta_gen = 0
 
-# t = data[:,1]
-# x = data[:,2]
-# dx = data[:,3]
-# I = data[:,4]
-# F = data[:,8]
-# I_des = data[:,11]
-# freq = data[:,12]
+plot_exp = False
+plot_angle = False
 
-# I_des_filt = filtering_data(I_des, t_ideal)
-# F_filt = filtering_data(F, t_ideal)
-# I_filt = filtering_data(I, t_ideal)
+for i in [1,2,3]:
+    filename = "experiment_results/Experiment_2/Chirp_angle_"+str(angle_i)+"_exp_"+str(i)+"_A_100.csv"
+    data = pd.read_csv(filename)
+    data = data.to_numpy()
+    F_fft, I_fft, TF, theta = data_process(data, t_ideal, N)
+    if plot_exp:
+        plot_results(F_fft, I_fft, TF, theta, freq, "angle_"+str(angle_i)+"_exp_"+str(i))
+
+    F_fft_gen += F_fft
+    I_fft_gen += I_fft
+    TF_gen += TF
+    theta_gen += theta
+
+F_fft = F_fft_gen/3
+I_fft = I_fft_gen/3 
+TF = TF_gen/3 
+theta = theta_gen/3
+
+if plot_angle:
+    plot_results(F_fft, I_fft, TF, theta, freq, "angle_"+str(angle_i))
 
 
-# I_des_fft = np.abs(fft(I_des_filt))[1:N//2]
-# F_fft = np.abs(fft(F_filt))[1:N//2]
-# I_fft = np.abs(fft(I_filt))[1:N//2]
+# plt.figure(figsize=[10, 5])
+# plt.xlim([0.1, 10])
+# plt.semilogx(freq, 20.0*np.log10(abs(TF_filt)), color = 'red', linewidth = 2.5)
+# plot_design(y_label="Magnitude [dB]", x_label="Frequency [Hz]", save=True, filename=default_path+"p3_"+filename)
 
-F_fft, I_fft, TF = data_process(data, t_ideal, N)
 
-# Первый график
 
-plt.subplot(2,1,1)
-plt.plot(freq, F_fft, "r", lw=1)
-plot_design(y_label="Amplitude for handle", xlim = [0,10], show=False)
-
-plt.subplot(2,1,2)
-plt.plot(freq, I_fft, "r", lw=1)
-plot_design(y_label="Amplitude for real current", x_label="Frequency [Hz]", xlim = [0,10])
-
-# Второй график
-plt.plot(freq, TF)
-plot_design(y_label="Amplitude for transfer function", x_label="Frequency [Hz]", xlim = [0,10], ylim=[0,0.003])

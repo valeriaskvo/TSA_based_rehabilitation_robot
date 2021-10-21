@@ -41,6 +41,8 @@ def plot_state_and_force(filename, wall_detection = True):
     F = data[:,8]
     I_des = data[:,11]
 
+    print("Average angle:", np.rad2deg(np.mean(theta)))
+
 
     xlim = [0, 120]
     
@@ -109,5 +111,5 @@ wall_detection_name = "Wall_detection" + parameters
 
 # filename_chirp = "experiment_results/Experiment_2/"+experiment_name+"_A_"+str(A)+".csv"
 
-filename_chirp = "experiment_results/Experiment_2/Chirp_angle_2_exp_2_A_100.csv"
+filename_chirp = "experiment_results/Experiment_2/Chirp_angle_5_exp_3_A_100.csv"
 plot_state_and_force(filename_chirp, wall_detection=False)

@@ -117,7 +117,7 @@ motor, sensors, stand_data = run_stand(stand_param)
 _, _, t, stand_data, I, F = get_state(stand_data, motor, sensors, get_I_F=True)
 
 
-parameters = "_angle_3_exp_1"
+parameters = "_angle_5_exp_3"
 experiment_name = "Chirp" + parameters
 wall_detection_name = "Wall_detection" + parameters
 
