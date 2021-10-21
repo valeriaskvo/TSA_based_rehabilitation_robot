@@ -1,3 +1,4 @@
+from numpy.core.defchararray import title
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -36,8 +37,6 @@ def chirp(t, A, w0, wf, tf, x0):
     return A * np.sin((0.5 * k * t**2 + w0) * 2*np.pi) + x0
 
 def filtering_data(x, t, t_ideal):
-    filter_freq = 50
-    b, a = signal.butter(4, filter_freq*(t_ideal[1]-t_ideal[0]))
     x_filt = signal.filtfilt(b, a, x, method="gust")
     f_x_int = interp1d(t, x_filt, fill_value="extrapolate")
     x_final = f_x_int(t_ideal)
@@ -61,8 +60,9 @@ def data_process(data, t_ideal, N):
 
 def plot_results(F_fft, I_fft, TF, theta, freq, filename):
     default_path = "experiment_results/Experiment_2/FFT_results/"
-    print(theta)
-    TF_filt = filtering_data(TF, freq, freq)
+    msg = "RJ angle is "+str(theta) + " [deg]"
+    print(msg)
+    TF_filt = signal.filtfilt(b, a, TF, method="gust")
 
     # Первый график
 
@@ -80,15 +80,46 @@ def plot_results(F_fft, I_fft, TF, theta, freq, filename):
     plt.figure(figsize=[10, 5])
     plt.plot(freq, TF, color = 'red', alpha = 0.2, linewidth = 1)
     plt.plot(freq, TF_filt, color = "red")
-    plot_design(y_label="Amplitude for transfer function", x_label="Frequency [Hz]", xlim = [0,10], ylim=[0,0.003], save=True, filename=default_path+"p2_"+filename)
+    plot_design(y_label="Amplitude for transfer function", x_label="Frequency [Hz]", plot_title=msg, xlim = [0,10], ylim=[0,0.003], save=True, filename=default_path+"p2_"+filename)
+
+    # В логарифмическом виде
 
     plt.figure(figsize=[10, 5])
     plt.xlim([0.1, 10])
     plt.semilogx(freq, 20.0*np.log10(abs(TF)), color = 'red', alpha = 0.2, linewidth = 1)
     plt.semilogx(freq, 20.0*np.log10(abs(TF_filt)), color = 'red', linewidth = 2.5)
-    plot_design(y_label="Magnitude [dB]", x_label="Frequency [Hz]", save=True, filename=default_path+"p3_"+filename)
+    plot_design(y_label="Magnitude [dB]", x_label="Frequency [Hz]", plot_title=msg, save=True, filename=default_path+"p3_"+filename)
 
-    return TF_filt
+    return
+
+def processing_one_angle(angle_i, freq, t_ideal, N, plot_exp = False, plot_angle = False):
+    F_fft_gen = np.zeros(freq.shape)
+    I_fft_gen = np.zeros(freq.shape)
+    TF_gen = np.zeros(freq.shape)
+    theta_gen = 0
+
+    for i in [1,2,3]:
+        filename = "experiment_results/Experiment_2/Chirp_angle_"+str(angle_i)+"_exp_"+str(i)+"_A_100.csv"
+        data = pd.read_csv(filename)
+        data = data.to_numpy()
+        F_fft, I_fft, TF, theta = data_process(data, t_ideal, N)
+        if plot_exp:
+            plot_results(F_fft, I_fft, TF, theta, freq, "angle_"+str(angle_i)+"_exp_"+str(i))
+
+        F_fft_gen += F_fft
+        I_fft_gen += I_fft
+        TF_gen += TF
+        theta_gen += theta
+
+    F_fft = F_fft_gen/3
+    I_fft = I_fft_gen/3 
+    TF = TF_gen/3 
+    theta = round(theta_gen/3,2)
+
+    TF_filt = signal.filtfilt(b, a, TF, method="gust")
+    if plot_angle:
+        plot_results(F_fft, I_fft, TF, theta, freq, "angle_"+str(angle_i))
+    return TF_filt, theta
 
 
 angle_i = 1
@@ -103,41 +134,25 @@ tf = 120
 t_ideal = np.linspace(0, tf, N)
 freq = fftfreq(N, tf/N)[1:N//2]
 
-# F_fft, I_fft, TF, theta = data_process(data, t_ideal, N)
-F_fft_gen = np.zeros(freq.shape)
-I_fft_gen = np.zeros(freq.shape)
-TF_gen = np.zeros(freq.shape)
-theta_gen = 0
+filter_freq = 50
+global b, a
+b, a = signal.butter(4, filter_freq*(t_ideal[1]-t_ideal[0]))
 
-plot_exp = False
-plot_angle = False
+labels = []
 
-for i in [1,2,3]:
-    filename = "experiment_results/Experiment_2/Chirp_angle_"+str(angle_i)+"_exp_"+str(i)+"_A_100.csv"
-    data = pd.read_csv(filename)
-    data = data.to_numpy()
-    F_fft, I_fft, TF, theta = data_process(data, t_ideal, N)
-    if plot_exp:
-        plot_results(F_fft, I_fft, TF, theta, freq, "angle_"+str(angle_i)+"_exp_"+str(i))
+for angle_i in [10,2,3,4,5,6,7,8]:
+    TF_filt_i, theta = processing_one_angle(angle_i, freq, t_ideal, N, plot_exp = False)
+    if angle_i == 10:
+        TFs = TF_filt_i
+    else:
+        TFs = np.vstack((TFs, TF_filt_i))
+    labels.append("RJ angle is "+str(theta)+" [deg]")
 
-    F_fft_gen += F_fft
-    I_fft_gen += I_fft
-    TF_gen += TF
-    theta_gen += theta
-
-F_fft = F_fft_gen/3
-I_fft = I_fft_gen/3 
-TF = TF_gen/3 
-theta = theta_gen/3
-
-if plot_angle:
-    plot_results(F_fft, I_fft, TF, theta, freq, "angle_"+str(angle_i))
-
-
-# plt.figure(figsize=[10, 5])
-# plt.xlim([0.1, 10])
-# plt.semilogx(freq, 20.0*np.log10(abs(TF_filt)), color = 'red', linewidth = 2.5)
-# plot_design(y_label="Magnitude [dB]", x_label="Frequency [Hz]", save=True, filename=default_path+"p3_"+filename)
+plt.figure(figsize=[10, 5])
+plt.ylim([-90, -20])
+plt.xlim([0.1, 10])
+plt.semilogx(freq, 20.0*np.log10(TFs.T))
+plot_design(y_label="Magnitude [dB]", x_label="Frequency [Hz]", labels = labels, save=True, filename="experiment_results/Experiment_2/FFT_results/final_result")
 
 
 
