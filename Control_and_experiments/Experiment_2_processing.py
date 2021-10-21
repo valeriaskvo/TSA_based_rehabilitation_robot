@@ -109,5 +109,5 @@ wall_detection_name = "Wall_detection" + parameters
 
 # filename_chirp = "experiment_results/Experiment_2/"+experiment_name+"_A_"+str(A)+".csv"
 
-filename_chirp = "experiment_results/Experiment_2/Chirp_angle_1_exp_3_A_100.csv"
+filename_chirp = "experiment_results/Experiment_2/Chirp_angle_2_exp_3_A_100.csv"
 plot_state_and_force(filename_chirp, wall_detection=False)
