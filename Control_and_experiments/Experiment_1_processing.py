@@ -25,11 +25,12 @@ def plot_design(x_label = "", y_label = "", plot_title = "", labels = [], xlim =
 
 def plot_motor_state(A, w, data, labels, t, x, dx, I):
     A = A *2*np.pi
-    # w = 0.1 *2*np.pi
     w = w *2*np.pi
 
-    x_des = A*np.sin(w*t)
+    x_des = data[:,9]
     dx_des = data[:,10]
+
+    print(x_des[-1]/(2*np.pi), x[-1]/(2*np.pi),(x_des[-1]-x[-1])/(2*np.pi))
 
     plt.figure(figsize=[15, 10])
     plt.tight_layout()
@@ -58,10 +59,8 @@ def TSA_jacobian(TSA, delta_x, x):
     return J
 
 A = 45
-w = 0.01
-data = pd.read_csv("experiment_results/Experiment_"+str(A)+"r.csv")
-# data = pd.read_csv("experiment_results/Experiment_Simka.csv")
-# data = pd.read_csv("experiment_results/Experiment_Simka_without_springs.csv")
+w = 0.1
+data = pd.read_csv("experiment_results/Experiment_1/Experiment_final.csv")
 
 labels = list(data.columns.values)
 
@@ -76,7 +75,7 @@ theta = data[:,6]
 T = data[:,7]
 F = data[:,8]
 
-TSA = {"L": 300,     # String length [mm]
+TSA = {"L": 320,     # String length [mm]
        "r": 0.8,     # String radius [mm]
        }
 
@@ -119,23 +118,23 @@ print(np.max(np.rad2deg(theta)))
 # plt.plot(x, T_des, color = 'r', lw = 1)
 # plot_design(x_label=labels[2], y_label="Calculated string tension [units]")
 
-# # Tension from contraction
-# plt.figure(figsize=[10, 10])
-# plt.tight_layout()
+# # # Tension from contraction
+# # plt.figure(figsize=[10, 10])
+# # plt.tight_layout()
 
-# plt.subplot(2,1,1)
-# plt.plot(delta_x, T, "r", lw=1)
-# plot_design(y_label=labels[7], plot_title="String tension versus string contraction", show = False)
+# # plt.subplot(2,1,1)
+# # plt.plot(delta_x, T, "r", lw=1)
+# # plot_design(y_label=labels[7], plot_title="String tension versus string contraction", show = False)
 
-# plt.subplot(2,1,2)
-# plt.plot(delta_x, T_des, color = 'r', lw = 1)
-# plot_design(x_label=labels[5], y_label="Calculated string tension [units]")
+# # plt.subplot(2,1,2)
+# # plt.plot(delta_x, T_des, color = 'r', lw = 1)
+# # plot_design(x_label=labels[5], y_label="Calculated string tension [units]")
 
 
-# plt.figure(figsize=[10, 5])
-# plt.plot(delta_x,I/F,"r", lw = 1.)
-# plot_design(x_label=labels[5], y_label = "Transmission ratio [units]")
+# # plt.figure(figsize=[10, 5])
+# # plt.plot(delta_x,I/F,"r", lw = 1.)
+# # plot_design(x_label=labels[5], y_label = "Transmission ratio [units]")
 
-# plt.figure(figsize=[10, 5])
-# plt.plot(T,F,"r", lw = 1.)
-# plot_design(x_label=labels[7], y_label = labels[7], plot_title="Force on handle versus string tension")
+# # plt.figure(figsize=[10, 5])
+# # plt.plot(T,F,"r", lw = 1.)
+# # plot_design(x_label=labels[7], y_label = labels[7], plot_title="Force on handle versus string tension")

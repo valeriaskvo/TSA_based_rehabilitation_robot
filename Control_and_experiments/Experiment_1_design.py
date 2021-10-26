@@ -44,8 +44,8 @@ def run_stand(stand_param):
 
     return motor, sensors, stand_data
 
-def get_state(stand_data, motor, sensors, t0 = 0, q_des = 0, dq_des = 0):
-    t = perf_counter() - t0 - START_TIME
+def get_state(stand_data, motor, sensors, q_des = 0, dq_des = 0):
+    t = perf_counter() - START_TIME
     q, dq = motor.state['angle'], motor.state['speed']
     linear_displacement, rotation_angle = sensors.read_encoders()
     force_a, force_b = sensors.read_force()
@@ -80,32 +80,30 @@ def velocity_control(stand_data, motor, sensors, q_des, dq_des = 0, gains = {"kp
     motor.pause()
     return q, dq, t, stand_data
 
-def chirp_dx(t, A,  dw, w):
-    return A* np.sin(dw * t**2/2 + w * t) * (dw * t + w)
-
 stand_param = {'interface':'can0', 'id_motor':0x141, 'current_limit':400}
 motor, sensors, stand_data = run_stand(stand_param)
 q, dq, t, stand_data = get_state(stand_data, motor, sensors)
 
-A = 45 *2*np.pi
-w = 0.01 *2*np.pi
-tf = 20
+A = 55 *2*np.pi
+w = 0.05 *2*np.pi
+tf = 40
 
-experiment_name = "Experiment_Simka_without_springs"
+experiment_name = "Experiment_final_3"
 
 try:
     while t<tf:
         v = A * np.cos(w*t) * w
+        x = A *np.sin(w*t)
         motor.set_speed(v)
-        q, dq, t, stand_data = get_state(stand_data, motor, sensors, dq_des = v)
-
+        q, dq, t, stand_data = get_state(stand_data, motor, sensors, q_des=x, dq_des = v)
 
 except KeyboardInterrupt:
     motor.pause()
     print("Exit...")
 finally:
-    save_data("experiment_results/"+experiment_name+".csv", stand_data)
+    save_data("experiment_results/Experiment_1/"+experiment_name+".csv", stand_data)
 
     q, dq, t, stand_data = velocity_control(stand_data, motor, sensors, 0)
     print("Actuator at the initial position")
+
     motor.disable()
