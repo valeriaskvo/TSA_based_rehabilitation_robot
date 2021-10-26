@@ -27,7 +27,7 @@ def plot_design(x_label = "", y_label = "", plot_title = "", labels = [], xlim =
         plt.ylim(ylim)
 
 
-    plt.legend(labels)    
+    # plt.legend(labels)    
 
     if save:
         plt.savefig(filename+".png")
@@ -173,12 +173,22 @@ for angle_i in [10,11, 2,3,4,5,6,7,8]:
         TFs = TF_filt_i
     else:
         TFs = np.vstack((TFs, TF_filt_i))
-    labels.append("RJ angle is "+str(theta)+" [deg]")
+    labels.append(r'$\phi = '+str(theta)+'^\circ$')
+
+
 
 plt.figure(figsize=[10, 5])
-# plt.ylim([-90, -20])
-plt.xlim([0.1, 10])
-plt.semilogx(freq, 20.0*np.log10(TFs.T))
+
+plt.legend(bbox_to_anchor=(1, 1),
+           bbox_transform=plt.gcf().transFigure)
+plt.ylim([1.5, 3])
+plt.xlim([0.01, 10])
+for i in range(len(labels)):
+    plt.semilogx(freq, np.log10(TFs[i,:]), label=labels[i]) #, label=labels[i]
+
+# plt.semilogx(freq, np.log10(TFs.T)) 
+# plt.legend(labels)
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
 plot_design(y_label="Magnitude [dB]", x_label="Frequency [Hz]", labels = labels, save=True, filename="experiment_results/Experiment_2/FFT_results/final_result")
 
 

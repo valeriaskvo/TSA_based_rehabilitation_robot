@@ -1,6 +1,15 @@
+from re import X
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
+from scipy.spatial import ConvexHull
+from scipy import signal
+from scipy.interpolate import interp1d
+
+def load_obj(name):
+    with open(name + '.pkl', 'rb') as f:
+        return pickle.load(f)
 
 def plot_design(x_label = "", y_label = "", plot_title = "", labels = [], xlim = None, ylim = None, show = True):
     plt.grid(color='black', linestyle='--', linewidth=1.0, alpha = 0.7)
@@ -14,10 +23,7 @@ def plot_design(x_label = "", y_label = "", plot_title = "", labels = [], xlim =
         plt.xlim(xlim)
 
     if ylim:
-        plt.ylim(ylim)
-
-
-    plt.legend(labels)    
+        plt.ylim(ylim) 
 
     if show:
         plt.show()
@@ -50,91 +56,100 @@ def plot_motor_state(A, w, data, labels, t, x, dx, I):
     plot_design(x_label = labels[1], y_label = labels[4])
     return
 
-def TSA_inverse_kinematics(TSA, delta_x):
-  theta = np.sqrt((TSA["L"]**2-(TSA["L"]-delta_x)**2)/TSA["r"]**2)
+def TSA_inverse_kinematics(TSA, phi):
+  theta = np.sqrt((TSA["L"]**2-(TSA["L"]-phi*TSA["R"])**2)/TSA["r"]**2)
   return theta
 
-def TSA_jacobian(TSA, delta_x, x):
-    J =  x*TSA["r"]**2/(TSA["L"]-delta_x)
+def TSA_jacobian(TSA, theta):
+    J =  theta*TSA["r"]**2/(TSA["L"]**2-theta**2*TSA["r"]**2)**0.5/TSA["R"]
     return J
+
+def TSA_drawings(x_data, y_data, x_des, y_des, x_label, y_label, labels, plot_num ,x_lim = [], y_lim = []):
+    
+    if plot_num == 1:
+        idx = np.argsort(x_data)
+        x_data = x_data[idx]
+        y_data = y_data[idx] 
+
+
+    points = np.vstack((x_data, y_data))
+    points = points.T
+    hull = ConvexHull(points)
+
+    x_region = points[hull.vertices,0]
+    y_region = points[hull.vertices,1]
+
+    if plot_num ==1:
+        b, a = signal.butter(4, 0.01)
+    else:
+        b, a = signal.butter(4, 0.001)
+    
+    y_filt = signal.filtfilt(b, a, y_data, method="gust")
+
+    plt.figure(figsize=[10, 5])
+    plt.plot(x_data, y_data, color = "#DFDCDC")
+    plt.plot(x_data, y_filt, color = "#3C3C3C", lw = 2, label = labels[0])
+    plt.plot(x_des, y_des, "r--", lw = 2, label = labels[1])
+    plt.legend()
+    plot_design(x_label = x_label, y_label = y_label, xlim = x_lim, ylim = y_lim)
+    return
+
+
+global calib_data
+calib_data = load_obj("calib_data")
 
 A = 45
 w = 0.1
-data = pd.read_csv("experiment_results/Experiment_1/Experiment_final.csv")
+data = pd.read_csv("experiment_results/Experiment_1/Experiment_final_1.csv")
 
 labels = list(data.columns.values)
 
 data = data.to_numpy()
 
 t = data[:,1]
-x = data[:,2]
-dx = data[:,3]
-I = data[:,4]
+theta = data[:,2]
+dtheta = data[:,3]
+I = data[:,4] * calib_data["motor_K"]
 delta_x = data[:,5]
-theta = data[:,6]
-T = data[:,7]
-F = data[:,8]
+phi = data[:,6]
+T = data[:,7] * calib_data["force_A"]
+F = data[:,8] * calib_data["force_B"]
 
-TSA = {"L": 320,     # String length [mm]
-       "r": 0.8,     # String radius [mm]
-       }
+theta_des = data[:,9]
+dtheta_des = data[:,10]
 
-des_x = TSA_inverse_kinematics(TSA, delta_x)
-J = TSA_jacobian(TSA, delta_x, x)
-des_d_delta_x = J*dx
-T_des = I*J
-
-plt.figure(figsize=[10, 5])
-plt.plot(t,np.rad2deg(theta),"r", lw = 3)
-plot_design(x_label=labels[1], y_label = "Joint angle [deg]", plot_title = "Angle in rotation joint versus time")
-print(np.max(np.rad2deg(theta)))
-
-# plot_motor_state(A, w, data, labels, t, x, dx, I)
-
-# # String contraction
-# plt.figure(figsize=[10, 5])
-# plt.plot(np.abs(x),delta_x, "r:", lw=1.5)
-# plt.plot(des_x, delta_x, color = 'black', lw = 3.)
-# plot_design(x_label=labels[2], y_label=labels[5], plot_title="String contraction versus motor angle", labels = ["Real data", "Desired data"])
-
-# # String contraction velocity
-# d_delta_x = np.diff(delta_x)/np.diff(t)
-
-# plt.figure(figsize=[10, 5])
-# plt.plot(x[:-1],d_delta_x, "r:", lw=1.5)
-# plt.plot(x, des_d_delta_x, color = 'black', lw = 3.)
-# plot_design(x_label=labels[2], y_label="String contraction velocity [mm/sec]", plot_title="Velocity of string contraction versus motor angle", labels = ["Real data", "Desired data"])
-
-# # Tension
-
-# plt.figure(figsize=[10, 10])
-# plt.tight_layout()
-
-# plt.subplot(2,1,1)
-# plt.plot(x, T, "r", lw=1)
-# plot_design(y_label=labels[7], plot_title="String tension versus motor angle", show = False)
-
-# plt.subplot(2,1,2)
-# plt.plot(x, T_des, color = 'r', lw = 1)
-# plot_design(x_label=labels[2], y_label="Calculated string tension [units]")
-
-# # # Tension from contraction
-# # plt.figure(figsize=[10, 10])
-# # plt.tight_layout()
-
-# # plt.subplot(2,1,1)
-# # plt.plot(delta_x, T, "r", lw=1)
-# # plot_design(y_label=labels[7], plot_title="String tension versus string contraction", show = False)
-
-# # plt.subplot(2,1,2)
-# # plt.plot(delta_x, T_des, color = 'r', lw = 1)
-# # plot_design(x_label=labels[5], y_label="Calculated string tension [units]")
+TSA = {"L": 320 *10**(-3),     # String length [mm]
+       "r": 0.7 *10**(-3),     # String radius [mm]
+       "R": 32 *10**(-3)}
 
 
-# # plt.figure(figsize=[10, 5])
-# # plt.plot(delta_x,I/F,"r", lw = 1.)
-# # plot_design(x_label=labels[5], y_label = "Transmission ratio [units]")
+phi_ideal = np.linspace(np.min(phi), np.max(phi), 10000)
+des_theta = TSA_inverse_kinematics(TSA, phi_ideal)
 
-# # plt.figure(figsize=[10, 5])
-# # plt.plot(T,F,"r", lw = 1.)
-# # plot_design(x_label=labels[7], y_label = labels[7], plot_title="Force on handle versus string tension")
+
+x_data = np.abs(theta)
+y_data = phi
+
+x_des = des_theta
+y_des = phi_ideal
+
+labels = [r"Experimental results",r"Analitical solution"]
+y_label = r"Rotation joint angle $\phi$ [rad]"
+x_label = r"Motor angle $\theta$ [rad]"
+
+TSA_drawings(x_data, y_data, x_des, y_des, x_label, y_label, labels, plot_num = 1, x_lim=[0,350])
+
+
+J = TSA_jacobian(TSA, theta_des[:-1])
+
+x_data = dtheta[:-1]
+y_data = np.diff(phi)/np.diff(t)
+
+x_des = dtheta_des[:-1]
+y_des = dtheta_des[:-1]*J
+
+labels = [r"Experimental results",r"Analitical solution"]
+y_label = r"Rotation joint velocity $\dot{\phi}$ [rad/sec]"
+x_label = r"Motor speed $\dot{\theta}$ [rad/sec]"
+
+TSA_drawings(x_data, y_data, x_des, y_des, x_label, y_label, labels, plot_num = 2)
