@@ -7,6 +7,8 @@ from scipy.fft import fft, fftfreq
 from scipy.interpolate import interp1d
 from scipy import signal
 import pickle
+import scipy as sp
+from mpl_toolkits.mplot3d import Axes3D
 
 def load_obj(name):
     with open(name + '.pkl', 'rb') as f:
@@ -16,9 +18,9 @@ def plot_design(x_label = "", y_label = "", plot_title = "", labels = [], xlim =
     plt.grid(color='black', linestyle='--', linewidth=1.0, alpha = 0.7)
     plt.grid(True)
 
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
-    plt.title(plot_title, pad=17)
+    plt.xlabel(x_label, labelpad = 10, size=11)
+    plt.ylabel(y_label, labelpad = 10, size=11)
+    plt.title(plot_title)
 
     if xlim:
         plt.xlim(xlim)
@@ -34,6 +36,9 @@ def plot_design(x_label = "", y_label = "", plot_title = "", labels = [], xlim =
 
     if show:
         plt.show()
+
+
+    plt.tight_layout()
     return
 
 def chirp(t, A, w0, wf, tf, x0):
@@ -50,7 +55,7 @@ def filtering_data(x, t, t_ideal):
 def data_process(data, t_ideal, N):
     t = data[:,1]
     I = data[:,4] * calib_data["motor_K"]
-    F = data[:,8] * calib_data["force_B"]
+    F = data[:,8] * calib_data["force_B"] * (75*10**(-3))
     theta = data[:,6]
 
     F_filt = filtering_data(F, t, t_ideal)
@@ -148,14 +153,14 @@ def processing_one_angle(angle_i, freq, t_ideal, N, plot_exp = False, plot_angle
 global calib_data
 calib_data = load_obj("calib_data")
 
-angle_i = 1
+angle_i = 10
 i = 1
 filename = "experiment_results/Experiment_2/Chirp_angle_"+str(angle_i)+"_exp_"+str(i)+"_A_100.csv"
 data = pd.read_csv(filename)
 labels = list(data.columns.values)
 data = data.to_numpy()
 
-N = 90000
+N = 10000
 tf = 120
 t_ideal = np.linspace(0, tf, N)
 freq = fftfreq(N, tf/N)[1:N//2]
@@ -167,29 +172,68 @@ b, a = signal.butter(4, filter_freq*(t_ideal[1]-t_ideal[0]))
 
 labels = []
 
-for angle_i in [10,11, 2,3,4,5,6,7,8]:
+# [10,11,2,3,4,5,6,7,8]
+for angle_i in [10,11,2,3,4,5,6,7,8]:
     TF_filt_i, theta = processing_one_angle(angle_i, freq, t_ideal, N)
+    theta_i = np.zeros(TF_filt_i.shape)+theta
     if angle_i == 10:
         TFs = TF_filt_i
+        thetas = theta_i
+        freqs = freq
     else:
-        TFs = np.vstack((TFs, TF_filt_i))
-    labels.append(r'$\phi = '+str(theta)+'^\circ$')
+        TFs = np.hstack((TFs, TF_filt_i))
+        thetas = np.hstack((thetas, theta_i))
+        freqs = np.hstack((freqs, freq))
+
+    labels.append(r'$\varphi = '+str(round(theta))+' ^\circ$')
+
+
+    print(TFs.shape, thetas.shape, freqs.shape)
+
+thetas = np.asarray(thetas)
+
+plt.figure(figsize=[6, 3])
+
+font = {'size': 12,
+        'family': 'serif'
+        }
+plt.rc('text', usetex=True)
+plt.rc('font', **font)
+
+# plt.legend(bbox_to_anchor=(1, 1),
+#            bbox_transform=plt.gcf().transFigure)
+# plt.ylim([0, 80])
+# plt.xlim([0.0, 10])
+# for i in range(len(labels)):
+#     plt.plot(freq, (TFs[i,:]), label=labels[i]) #, label=labels[i]
+
+# # plt.semilogx(freq, np.log10(TFs.T)) 
+# # plt.legend(labels)
+# plt.legend(bbox_to_anchor=(1.05, 1), loc='upper', borderaxespad=0.1)
+# plot_design(y_label=r"Transfer function $\|\frac{\tau_{o}}{u}\|$", x_label=r"Frequency [Hz]", labels = labels, save=True, filename="experiment_results/Experiment_2/FFT_results/final_result")
 
 
 
-plt.figure(figsize=[10, 5])
 
-plt.legend(bbox_to_anchor=(1, 1),
-           bbox_transform=plt.gcf().transFigure)
-plt.ylim([1.5, 3])
-plt.xlim([0.01, 10])
-for i in range(len(labels)):
-    plt.semilogx(freq, np.log10(TFs[i,:]), label=labels[i]) #, label=labels[i]
 
-# plt.semilogx(freq, np.log10(TFs.T)) 
-# plt.legend(labels)
-plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-plot_design(y_label="Magnitude [dB]", x_label="Frequency [Hz]", labels = labels, save=True, filename="experiment_results/Experiment_2/FFT_results/final_result")
+
+
+x = freqs
+y = thetas
+z = TFs
+
+spline = sp.interpolate.Rbf(x,y,z,function='thin-plate')
+
+xi = np.linspace(x.min(), x.max(), 50)
+yi = np.linspace(y.min(), y.max(), 50)
+xi, yi = np.meshgrid(xi, yi)
+
+zi = spline(xi,yi)
+
+fig = plt.figure()
+ax = Axes3D(fig)
+ax.plot_surface(xi,yi,zi)
+plt.show()
 
 
 # TF_filt_i, theta = processing_one_angle(11, freq, t_ideal, N, plot_angle=True)
