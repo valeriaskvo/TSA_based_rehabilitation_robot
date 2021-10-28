@@ -143,7 +143,7 @@ def processing_one_angle(angle_i, freq, t_ideal, N, plot_exp = False, plot_angle
     TF = TF_gen/3 
     F = F_gen/3
     I = I_gen/3
-    theta = round(theta_gen/3,2)
+    theta = theta_gen/3
 
     TF_filt = signal.filtfilt(b, a, TF, method="gust")
     if plot_angle:
@@ -189,7 +189,7 @@ for angle_i in [10,11,2,3,4,5,6,7,8]:
         freqs = np.vstack((freqs, freq[idx]))
 
     labels.append(r'$\varphi = '+str(round(theta))+' ^\circ$')
-
+    print(theta)
 
     print(TFs.shape, thetas.shape, TFs_plot.shape)
 
