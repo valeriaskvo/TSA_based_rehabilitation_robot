@@ -160,7 +160,7 @@ data = pd.read_csv(filename)
 labels = list(data.columns.values)
 data = data.to_numpy()
 
-N = 10000
+N = 90000
 tf = 120
 t_ideal = np.linspace(0, tf, N)
 freq = fftfreq(N, tf/N)[1:N//2]
@@ -171,69 +171,68 @@ b, a = signal.butter(4, filter_freq*(t_ideal[1]-t_ideal[0]))
 
 
 labels = []
+idx = np.argwhere((freq>0) & (freq<10))
 
 # [10,11,2,3,4,5,6,7,8]
 for angle_i in [10,11,2,3,4,5,6,7,8]:
     TF_filt_i, theta = processing_one_angle(angle_i, freq, t_ideal, N)
     theta_i = np.zeros(TF_filt_i.shape)+theta
     if angle_i == 10:
-        TFs = TF_filt_i
-        thetas = theta_i
-        freqs = freq
+        TFs = TF_filt_i[idx]
+        TFs_plot = TF_filt_i[idx]
+        thetas = theta_i[idx]
+        freqs = freq[idx]
     else:
-        TFs = np.hstack((TFs, TF_filt_i))
-        thetas = np.hstack((thetas, theta_i))
-        freqs = np.hstack((freqs, freq))
+        TFs = np.vstack((TFs, TF_filt_i[idx]))
+        TFs_plot = np.hstack((TFs_plot, TF_filt_i[idx]))
+        thetas = np.vstack((thetas, theta_i[idx]))
+        freqs = np.vstack((freqs, freq[idx]))
 
     labels.append(r'$\varphi = '+str(round(theta))+' ^\circ$')
 
 
-    print(TFs.shape, thetas.shape, freqs.shape)
+    print(TFs.shape, thetas.shape, TFs_plot.shape)
 
-thetas = np.asarray(thetas)
+# plt.figure(figsize=[6, 3])
 
-plt.figure(figsize=[6, 3])
-
-font = {'size': 12,
-        'family': 'serif'
-        }
-plt.rc('text', usetex=True)
-plt.rc('font', **font)
+# font = {'size': 12,
+#         'family': 'serif'
+#         }
+# plt.rc('text', usetex=True)
+# plt.rc('font', **font)
 
 # plt.legend(bbox_to_anchor=(1, 1),
 #            bbox_transform=plt.gcf().transFigure)
-# plt.ylim([0, 80])
 # plt.xlim([0.0, 10])
 # for i in range(len(labels)):
-#     plt.plot(freq, (TFs[i,:]), label=labels[i]) #, label=labels[i]
+#     plt.plot(freq[idx], (TFs_plot[:,i]), label=labels[i]) #, label=labels[i]
 
-# # plt.semilogx(freq, np.log10(TFs.T)) 
-# # plt.legend(labels)
-# plt.legend(bbox_to_anchor=(1.05, 1), loc='upper', borderaxespad=0.1)
+# plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.1)
 # plot_design(y_label=r"Transfer function $\|\frac{\tau_{o}}{u}\|$", x_label=r"Frequency [Hz]", labels = labels, save=True, filename="experiment_results/Experiment_2/FFT_results/final_result")
 
 
+with open('FTT_process.npy', 'wb') as f:
+    np.save(f, freqs)
+    np.save(f, thetas)
+    np.save(f, TFs)
 
 
+# x = freqs
+# y = thetas
+# z = TFs
 
+# spline = sp.interpolate.Rbf(x,y,z,function='thin-plate')
 
+# xi = np.linspace(x.min(), x.max(), 50)
+# yi = np.linspace(y.min(), y.max(), 50)
+# xi, yi = np.meshgrid(xi, yi)
 
-x = freqs
-y = thetas
-z = TFs
+# zi = spline(xi,yi)
 
-spline = sp.interpolate.Rbf(x,y,z,function='thin-plate')
-
-xi = np.linspace(x.min(), x.max(), 50)
-yi = np.linspace(y.min(), y.max(), 50)
-xi, yi = np.meshgrid(xi, yi)
-
-zi = spline(xi,yi)
-
-fig = plt.figure()
-ax = Axes3D(fig)
-ax.plot_surface(xi,yi,zi)
-plt.show()
+# fig = plt.figure()
+# ax = Axes3D(fig)
+# ax.plot_surface(xi,yi,zi)
+# plt.show()
 
 
 # TF_filt_i, theta = processing_one_angle(11, freq, t_ideal, N, plot_angle=True)
