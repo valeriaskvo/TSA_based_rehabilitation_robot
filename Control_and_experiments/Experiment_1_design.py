@@ -85,10 +85,10 @@ motor, sensors, stand_data = run_stand(stand_param)
 q, dq, t, stand_data = get_state(stand_data, motor, sensors)
 
 A = 55 *2*np.pi
-w = 0.05 *2*np.pi
-tf = 40
+w = 0.025 *2*np.pi
+tf = 120
 
-experiment_name = "Experiment_final_3"
+experiment_name = "Experiment_final_just"
 
 try:
     while t<tf:

@@ -168,30 +168,30 @@ freq = fftfreq(N, tf/N)[1:N//2]
 filter_freq = 50
 global b, a
 b, a = signal.butter(4, filter_freq*(t_ideal[1]-t_ideal[0]))
+print(filter_freq*(t_ideal[1]-t_ideal[0]))
 
+# labels = []
+# idx = np.argwhere((freq>0) & (freq<10))
 
-labels = []
-idx = np.argwhere((freq>0) & (freq<10))
+# # [10,11,2,3,4,5,6,7,8]
+# for angle_i in [10,11,2,3,4,5,6,7,8]:
+#     TF_filt_i, theta = processing_one_angle(angle_i, freq, t_ideal, N)
+#     theta_i = np.zeros(TF_filt_i.shape)+theta
+#     if angle_i == 10:
+#         TFs = TF_filt_i[idx]
+#         TFs_plot = TF_filt_i[idx]
+#         thetas = theta_i[idx]
+#         freqs = freq[idx]
+#     else:
+#         TFs = np.vstack((TFs, TF_filt_i[idx]))
+#         TFs_plot = np.hstack((TFs_plot, TF_filt_i[idx]))
+#         thetas = np.vstack((thetas, theta_i[idx]))
+#         freqs = np.vstack((freqs, freq[idx]))
 
-# [10,11,2,3,4,5,6,7,8]
-for angle_i in [10,11,2,3,4,5,6,7,8]:
-    TF_filt_i, theta = processing_one_angle(angle_i, freq, t_ideal, N)
-    theta_i = np.zeros(TF_filt_i.shape)+theta
-    if angle_i == 10:
-        TFs = TF_filt_i[idx]
-        TFs_plot = TF_filt_i[idx]
-        thetas = theta_i[idx]
-        freqs = freq[idx]
-    else:
-        TFs = np.vstack((TFs, TF_filt_i[idx]))
-        TFs_plot = np.hstack((TFs_plot, TF_filt_i[idx]))
-        thetas = np.vstack((thetas, theta_i[idx]))
-        freqs = np.vstack((freqs, freq[idx]))
+#     labels.append(r'$\varphi = '+str(round(theta))+' ^\circ$')
+#     print(theta)
 
-    labels.append(r'$\varphi = '+str(round(theta))+' ^\circ$')
-    print(theta)
-
-    print(TFs.shape, thetas.shape, TFs_plot.shape)
+#     print(TFs.shape, thetas.shape, TFs_plot.shape)
 
 # plt.figure(figsize=[6, 3])
 
@@ -211,10 +211,10 @@ for angle_i in [10,11,2,3,4,5,6,7,8]:
 # plot_design(y_label=r"Transfer function $\|\frac{\tau_{o}}{u}\|$", x_label=r"Frequency [Hz]", labels = labels, save=True, filename="experiment_results/Experiment_2/FFT_results/final_result")
 
 
-with open('FTT_process.npy', 'wb') as f:
-    np.save(f, freqs)
-    np.save(f, thetas)
-    np.save(f, TFs)
+# with open('FTT_process.npy', 'wb') as f:
+#     np.save(f, freqs)
+#     np.save(f, thetas)
+#     np.save(f, TFs)
 
 
 # x = freqs

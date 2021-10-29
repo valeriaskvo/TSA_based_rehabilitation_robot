@@ -64,9 +64,19 @@ def TSA_inverse_kinematics(TSA, phi):
   theta = np.sqrt((TSA["L"]**2-(TSA["L"]-phi*TSA["R"])**2)/TSA["r"]**2)
   return theta
 
-def TSA_jacobian(TSA, theta):
-    J =  theta*TSA["r"]**2/(TSA["L"]**2-theta**2*TSA["r"]**2)**0.5/TSA["R"]
+def TSA_jacobian(TSA, phi, theta):
+    J =  theta*TSA["r"]**2/((TSA["L"]-phi*TSA["R"])*TSA["R"])
+    # J = TSA["r"]
     return J
+
+def sliding_window(x,y,n = 1000):
+    x_new = np.zeros((len(x)-n,))
+    y_new = np.zeros((len(x)-n,))
+
+    for i in range(len(x_new)):
+        x_new[i] = np.mean(x[i:i+n])
+        y_new[i] = np.mean(y[i:i+n])
+    return x_new, y_new
 
 def TSA_drawings(x_data, y_data, x_des, y_des, x_label, y_label, labels, plot_num ,x_lim = [], y_lim = []):
     
@@ -97,39 +107,35 @@ def TSA_drawings(x_data, y_data, x_des, y_des, x_label, y_label, labels, plot_nu
     plt.rc('text', usetex=True)
     plt.rc('font', **font)
 
-
     plt.plot(x_data, y_data,'o', color = "#DFDCDC")
-    # plt.plot(x_data, y_filt,'o', color = "#3C3C3C", label = labels[0])
-    plt.plot(x_des[1:], y_des[1:], "r--", lw = 2, label = labels[1])
+    plt.plot(x_data, y_filt, color = "#3C3C3C", label = labels[0])
+    plt.plot(x_des[1:], y_filt[0]+y_des[1:], "r--", lw = 2, label = labels[1])
     plt.legend()
     plot_design(x_label = x_label, y_label = y_label, xlim = x_lim, ylim = y_lim)
     return
 
-def filtering(y_data, freq = 0.01):
+def filtering_data(y_data, freq = 0.06666740741563795):
     b, a = signal.butter(4, freq)
     
     y_filt = signal.filtfilt(b, a, y_data, method="gust")
     return y_filt
 
-def sliding_window(x,y,n = 1000):
-    x_new = np.zeros((len(x)-n,))
-    y_new = np.zeros((len(x)-n,))
 
-    for i in range(len(x_new)):
-        x_new[i] = np.mean(x[i:i+n])
-        y_new[i] = np.mean(y[i:i+n])
-    return x_new, y_new
 
 global calib_data
 calib_data = load_obj("calib_data")
 
 A = 45
 w = 0.1
-data = pd.read_csv("experiment_results/Experiment_1/Experiment_final_1.csv")
+data = pd.read_csv("experiment_results/Experiment_1/Experiment_final_long.csv")
 
 labels = list(data.columns.values)
 
 data = data.to_numpy()
+
+TSA = {"L": 340 *10**(-3),     # String length [mm]
+       "r": 0.71 *10**(-3),     # String radius [mm]
+       "R": 32 *10**(-3)}
 
 t = data[:,1]
 theta = data[:,2]
@@ -137,92 +143,73 @@ dtheta = data[:,3]
 I = data[:,4] * calib_data["motor_K"]
 delta_x = data[:,5]
 phi = data[:,6]
-T = data[:,7] * calib_data["force_A"]
-F = data[:,8] * calib_data["force_B"]
+T = data[:,8] * calib_data["force_B"] * (75*10**(-3))
 
 theta_des = data[:,9]
 dtheta_des = data[:,10]
 
-TSA = {"L": 320 *10**(-3),     # String length [mm]
-       "r": 0.75 *10**(-3),     # String radius [mm]
-       "R": 32 *10**(-3)}
-
-T = data[:,7] * calib_data["force_A"] * TSA["R"]
-
 phi_ideal = np.linspace(np.min(phi), np.max(phi), 10000)
 des_theta = TSA_inverse_kinematics(TSA, phi_ideal)
 
+x_data = np.abs(theta)
+y_data = phi
 
-# x_data = np.abs(theta)
-# y_data = phi
+x_des = des_theta
+y_des = phi_ideal
 
-# x_des = des_theta
-# y_des = phi_ideal
+labels = [r"Experimental results",r"Analitical solution"]
+y_label = r"Rotation joint angle $\varphi$ [rad]"
+x_label = r"Motor angle $\theta$ [rad]"
 
-# labels = [r"Experimental results",r"Analitical solution"]
-# y_label = r"Rotation joint angle $\varphi$ [rad]"
-# x_label = r"Motor angle $\theta$ [rad]"
+TSA_drawings(x_data, y_data, x_des, y_des, x_label, y_label, labels, plot_num = 1, x_lim=[0,330])
 
-# TSA_drawings(x_data, y_data, x_des, y_des, x_label, y_label, labels, plot_num = 1, x_lim=[0,350])
+idx = np.argwhere((np.abs(phi)>0.15))
+idx = np.reshape(idx, (len(idx,)))
 
-# J = TSA_jacobian(TSA, theta)
+phi = phi[idx]
+I = np.abs(I[idx])
+T = T[idx]
+t = t[idx]
 
-# dtheta = dtheta
-# dphi = np.diff(phi)/np.diff(t)
-
-# dphi_des = dtheta*J
-
-# T_filt = filtering(T, freq = 0.005)
-# I_filt = filtering(I)
-
-# idx = np.argsort(phi)
-
-# phi_avg, T_avg = sliding_window(phi[idx], T[idx])
-
-# x_label = r"Rotation joint angle $\varphi$ [rad]"
-# y_label = r"Rotation joint torque $\tau_h$ [Nm]"
-
-# plt.figure(figsize=[6, 3])
-# font = {'size': 12,
-#     'family': 'serif'
-#     }
-# plt.rc('text', usetex=True)
-# plt.rc('font', **font)
-
-# plt.plot(phi, T)
-# plt.plot(phi, T,'o', color = "#DFDCDC")
-# plt.plot(phi_avg, T_avg, color = "#3C3C3C", lw = 2)
-# plt.legend()
-# plot_design(x_label = x_label, y_label = y_label, xlim = [0, 3.14])
-
-J = TSA_jacobian(TSA, theta)
-dtheta = dtheta
-dphi = np.diff(phi)/np.diff(t)
-
-dphi_des = dtheta*J
 idx = np.argsort(phi)
-phi_avg, T_avg = sliding_window(phi[idx], T[idx])
+phi = phi[idx]
+T = T[idx]
+I = I[idx]
 
-T_filt = filtering(T)
-I_filt = filtering(I)
+T_filt = filtering_data(T)
+I_filt = filtering_data(I)
 
-I_des = T_filt*J
+TF = T_filt/I_filt
 
-plt.plot(phi, J)
-plt.show()
+phi_ideal = np.linspace(np.min(np.abs(phi)), np.max(np.abs(phi)), 1000)
+theta_ideal = TSA_inverse_kinematics(TSA, phi_ideal)
+J = TSA_jacobian(TSA, phi_ideal, theta_ideal)
+TF_ideal = 1/J
 
-# x_label = r"Rotation joint angle $\varphi$ [rad]"
-# y_label = r"Rotation joint torque $\tau_h$ [Nm]"
+TF_filt = filtering_data(TF, freq = 0.01)
 
-# plt.figure(figsize=[6, 3])
-# font = {'size': 12,
-#     'family': 'serif'
-#     }
-# plt.rc('text', usetex=True)
-# plt.rc('font', **font)
+labels = [r"Experimental results",r"Analitical solution"]
+y_label = r"Transfer function $\|\frac{\tau_{o}}{u}\|$"
+x_label = r"Rotation joint angle $\varphi$ [rad]"
+x_lim = [0,3.14]
+y_lim = []
+y_lim = [0, 200]
 
-# plt.plot(phi, T)
-# plt.plot(phi, T,'o', color = "#DFDCDC")
-# plt.plot(phi_avg, T_avg, color = "#3C3C3C", lw = 2)
-# plt.legend()
-# plot_design(x_label = x_label, y_label = y_label, xlim = [0, 3.14])
+n_off = 1000
+phi_off = phi[-n_off]
+theta_off = TSA_inverse_kinematics(TSA, phi_off)
+J_off = TSA_jacobian(TSA, phi_off, theta_off)
+
+
+plt.figure(figsize=[6, 3])
+font = {'size': 12,
+    'family': 'serif'
+    }
+plt.rc('text', usetex=True)
+plt.rc('font', **font)
+
+plt.plot(phi, TF,'o', color = "#DFDCDC")
+plt.plot(phi, TF_filt, color = "#3C3C3C", label = labels[0])
+plt.plot(phi_ideal, TF_ideal - (1/J_off-TF_filt[-n_off]), "r--", lw = 2, label = labels[1])
+plt.legend()
+plot_design(x_label = x_label, y_label = y_label, xlim = x_lim, ylim = y_lim)
