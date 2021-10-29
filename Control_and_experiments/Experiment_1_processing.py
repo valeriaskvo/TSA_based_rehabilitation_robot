@@ -180,13 +180,12 @@ T_filt = filtering_data(T)
 I_filt = filtering_data(I)
 
 TF = T_filt/I_filt
+TF_filt = filtering_data(TF, freq = 0.01)
 
 phi_ideal = np.linspace(np.min(np.abs(phi)), np.max(np.abs(phi)), 1000)
 theta_ideal = TSA_inverse_kinematics(TSA, phi_ideal)
 J = TSA_jacobian(TSA, phi_ideal, theta_ideal)
 TF_ideal = 1/J
-
-TF_filt = filtering_data(TF, freq = 0.01)
 
 labels = [r"Experimental results",r"Analitical solution"]
 y_label = r"Transfer function $\|\frac{\tau_{o}}{u}\|$"
