@@ -4,7 +4,7 @@ from struct import unpack
 
 def rot_lin_scale(sensor):
     if sensor == "rot":
-        return 1 / 2048 * 2 * pi / 4
+        return 1 / 1024 * 2 * pi / 4
     else:
         return 1 / 360 * 25.4 / 4
 
