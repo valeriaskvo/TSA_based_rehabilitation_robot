@@ -30,9 +30,9 @@ def load_data(path):
     return headers, data
 
 path = "/home/valeria/TSA_based_rehabilitation_robot/Control_and_experiments/Exoskeleton_experiments/experiment_results/Lever_Stand_experiments/"
-filename = "Current_300_weight_0.csv"
+# filename = "Current_300_weight_0.csv"
 # filename = "Current_150_weight_1_25.csv"
-
+filename = "Velocity_25_weight_3_5.csv"
 
 headers, data = load_data(path+filename)
 for i in range(len(headers)):
