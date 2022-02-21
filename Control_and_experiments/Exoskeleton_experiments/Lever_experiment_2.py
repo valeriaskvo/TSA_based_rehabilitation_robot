@@ -117,7 +117,7 @@ stand_param = {'interface': 'can0', 'id_motor': 0x141, 'current_limit': 600}
 motor, sensors, stand_data = run_stand(stand_param)
 _, _, t, stand_data = get_state(stand_data, motor, sensors)
 
-tf = 20
+tf = 40
 # tf = 5
 theta_max = 80 *2*np.pi
 I_des = 150
@@ -126,8 +126,11 @@ const_speed = 30
 F_constr = 0.06
 n_avg = 50
 
+
+speed = 25
 # experiment_name = "Current_"+str(I_des)+"_weight_1_25"
-experiment_name = "Velocity_"+str(int(theta_max/tf))+"_weight_3_5"
+# experiment_name = "Human_study_Velocity_"+str(int(theta_max/tf))+'_1'
+experiment_name = "Human_study_Velocity_"+str(speed)+'_1'
 
 try:
     input('Press enter to continue...')
@@ -135,13 +138,13 @@ try:
         # motor.set_current(I_des)
         # _, _, t, stand_data = get_state(stand_data, motor, sensors, I_des=I_des)
 
-        q_des = linear_traj(t, tf, theta_max)
+        # q_des = linear_traj(t, tf, theta_max)
         # q, dq, t, stand_data = velocity_control(stand_data, motor, sensors, q_des)
 
-        motor.set_speed(theta_max/tf)
-        _, _, t, stand_data = get_state(stand_data, motor, sensors, q_des=q_des, dq_des=theta_max/tf)
+        motor.set_speed(speed)
+        _, _, t, stand_data = get_state(stand_data, motor, sensors, q_des=0, dq_des=theta_max/tf)
     
-    input('Press enter to finish...')
+    # input('Press enter to finish...')
 
 
 
