@@ -75,7 +75,7 @@ def get_state(stand_data, motor, sensors, q_des=0, dq_des=0, I_des=0):
 
     stand_data["Angle for pendulum on stand [rad]"].append(rotation_angle)
     # stand_data["Joint angle [rad]"].append(calib_data["alpha_zero"] - rotation_angle)
-    stand_data["Joint angle [rad]"].append(np.rad2deg(90) - rotation_angle)
+    stand_data["Joint angle [rad]"].append(np.deg2rad(90) - rotation_angle)
     stand_data["Force sensor TSA [units]"].append(force_a)
     stand_data["Force sensor TSA [N]"].append(force_a*calib_data["force_A"])
 
@@ -127,7 +127,7 @@ F_constr = 0.06
 n_avg = 50
 
 # experiment_name = "Current_"+str(I_des)+"_weight_1_25"
-experiment_name = "Velocity_"+str(int(theta_max/tf))+"_weight_1"
+experiment_name = "Velocity_"+str(int(theta_max/tf))+"_weight_3_5"
 
 try:
     input('Press enter to continue...')
