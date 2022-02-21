@@ -37,13 +37,13 @@ def calibration_force(m, tf, sensor, sensor_data, weight):
 calib_data = load_obj("calib_data")
 bus = CAN_Bus(interface = 'can0')
 sensors = SensorRJ(bus)
-sensor = "A"
+sensor = "B"
 
 
 sensor_data = []
 weight = []
 tf = 5
-ms = [0.5, 1, 0.5+1.25, 2.25]
+ms = [0.5, 1, 1.25, 0.5+1.25, 2.25]
 
 for m in ms:
     sensor_data, weight = calibration_force(m, tf, sensor, sensor_data, weight)

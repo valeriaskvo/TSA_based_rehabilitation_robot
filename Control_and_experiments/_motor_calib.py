@@ -81,18 +81,23 @@ t0 = perf_counter()
 t = 0
 q_des = np.pi/2
 
-m = [(16 + 24 + 102 + 99*2)*10**(-3), (16 + 24 + 102 + 99)*10**(-3), (16 + 24 + 102)*10**(-3)]
-l = 100 *10**(-3)
+# m = [(16 + 24 + 102 + 99*2)*10**(-3), (16 + 24 + 102 + 99)*10**(-3), (16 + 24 + 102)*10**(-3)]
+# l = 100 *10**(-3)
+
+m = [120 * 10**(-3), 2*120 * 10**(-3), 3*120 * 10**(-3)]
+l = [100 *10**(-3), 150 *10**(-3)]
 
 I_data, q_data, m_data = [], [], []
 try:
-    for i in range(len(m)):
-        _ = input("Put weight "+str(i+1)+" on pendulum")
-        I_data, q_data, m_data = velocity_control(I_data, q_data, m_data, motor, q_des, m[i])
-        k = calculate_K(I_data, q_data, m_data, l)
-        print("K = ", k)
-        calib_data["motor_K"] = k
-        save_obj(calib_data,"calib_data")
+    for j in range(len(l)):
+        print("Put the weights on L=", l[j]*10**3, "mm")
+        for i in range(len(m)):
+            _ = input("Put weight "+str(i+1)+" on pendulum")
+            I_data, q_data, m_data = velocity_control(I_data, q_data, m_data, motor, q_des, m[i])
+            k = calculate_K(I_data, q_data, m_data, l[j])
+            print("K = ", k)
+            calib_data["motor_K"] = k
+            save_obj(calib_data,"calib_data")
 
 except KeyboardInterrupt:
     print("Motor stop!")

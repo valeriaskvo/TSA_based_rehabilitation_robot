@@ -2,6 +2,12 @@ from can import CAN_Bus
 from time import sleep, perf_counter
 from struct import unpack
 from sensors import SensorRJ
+import pickle
+
+
+def load_obj(name):
+    with open(name + '.pkl', 'rb') as f:
+        return pickle.load(f)
 
 # bus = CAN_Bus(interface = 'can0')
 
@@ -46,6 +52,7 @@ from sensors import SensorRJ
 # except KeyboardInterrupt:
 #     print("Exit...")
 
+calib_data = load_obj("/home/valeria/TSA_based_rehabilitation_robot/Control_and_experiments/calib_data")
 
 bus = CAN_Bus(interface = 'can0')
 
@@ -71,10 +78,11 @@ try:
         ti = perf_counter()
         dt = dt + ti - t
         t = ti
-        msg = "Force A: {:f}; Force B: {:-f}; Linear encoder: {:-f}; Angular encoder: {:-f}".format(force_a, force_b, linear_displacement, rotation_angle*180/3.1415926)
+        # msg = "Zero B: {:-f}, Force B: {:-f}".format(force_b, force_b*calib_data["force_B"]/9.8)
+        msg = "Force A: {:f}; Force B: {:-f}; Linear encoder: {:-f}; Angular encoder: {:-f}".format(force_a*calib_data["force_A"]/9.8, force_b*calib_data["force_B"]/9.8, linear_displacement, rotation_angle*180/3.1415926)
         print(msg)
 
-        sleep(0.05)
+        sleep(0.1)
 except KeyboardInterrupt:
     print("Exit...")
 

@@ -22,6 +22,8 @@ def reset_data():
                   "Joint angle [rad]": [],
                   "Force sensor TSA [units]": [],
                   "Force sensor TSA [N]": [],
+                  "Force sensor Lever [units]": [],
+                  "Force sensor Lever [N]": [],
                   "Desired motor angle [rad]": [],
                   "Desired motor speed [rad/sec]": [],
                   "Desired motor current [units]": [],
@@ -58,12 +60,11 @@ def run_stand(stand_param):
 
     return motor, sensors, stand_data
 
-
 def get_state(stand_data, motor, sensors, q_des=0, dq_des=0, I_des=0):
     t = perf_counter() - START_TIME
     q, dq, I = motor.state['angle'], motor.state['speed'], motor.state['current']
     _, rotation_angle = sensors.read_encoders()
-    force_a, _ = sensors.read_force()
+    force_a, force_b = sensors.read_force()
 
     stand_data["Time [sec]"].append(t)
     stand_data["Motor angle [rad]"].append(q)
@@ -75,13 +76,16 @@ def get_state(stand_data, motor, sensors, q_des=0, dq_des=0, I_des=0):
     stand_data["Force sensor TSA [units]"].append(force_a)
     stand_data["Force sensor TSA [N]"].append(force_a*calib_data["force_A"])
 
+    stand_data["Force sensor Lever [units]"].append(force_b)
+    stand_data["Force sensor Lever [N]"].append(force_b*calib_data["force_B"])
+
+
     stand_data["Desired motor angle [rad]"].append(q_des)
     stand_data["Desired motor speed [rad/sec]"].append(dq_des)
     stand_data["Desired motor current [units]"].append(I_des)
     stand_data["Desired motor torque [Nm]"].append(I_des*calib_data["motor_K"])
 
     return q, dq, t, stand_data
-
 
 def velocity_control(stand_data, motor, sensors, q_des, dq_des=0, gains={"kp": 1.5, "kd": 0.8}, v_max=400, threshold=np.pi/360):
     q, dq, t, stand_data = get_state(stand_data, motor, sensors)
@@ -101,31 +105,45 @@ def velocity_control(stand_data, motor, sensors, q_des, dq_des=0, gains={"kp": 1
     return q, dq, t, stand_data
 
 
+def linear_traj(t, t_max, theta_max):
+    q_des = theta_max/t_max * t
+    return q_des
+
+
 stand_param = {'interface': 'can0', 'id_motor': 0x141, 'current_limit': 400}
 motor, sensors, stand_data = run_stand(stand_param)
 _, _, t, stand_data = get_state(stand_data, motor, sensors)
 
 
 
-tf = 5
-I_des = 200
+tf = 15
+theta_max = 50 *2*np.pi
+I_des = 150
 
 const_speed = 30
 F_constr = 0.06
 n_avg = 50
 
-experiment_name = "Current_"+str(I_des)+"_weight_0"
+experiment_name = "Velocity_"+str(int(theta_max/tf))+"_weight_1_25"
 
 try:
     while t < tf:
-        motor.set_current(I_des)
-        _, _, t, stand_data = get_state(stand_data, motor, sensors, I_des=I_des)
+        # motor.set_current(I_des)
+        # _, _, t, stand_data = get_state(stand_data, motor, sensors, I_des=I_des)
+
+        q_des = linear_traj(t, tf, theta_max)
+        # q, dq, t, stand_data = velocity_control(stand_data, motor, sensors, q_des)
+
+        motor.set_speed(theta_max/tf)
+        _, _, t, stand_data = get_state(stand_data, motor, sensors, q_des=q_des, dq_des=theta_max/tf)
+
+
 
 except KeyboardInterrupt:
     motor.pause()
     print("Exit...")
 finally:
-    save_data("/home/valeria/TSA_based_rehabilitation_robot/Control_and_experiments/Exoskeleton_experiments/experiment_results" +
+    save_data("/home/valeria/TSA_based_rehabilitation_robot/Control_and_experiments/Exoskeleton_experiments/experiment_results/Lever_Experiment_1/" +
               experiment_name+".csv", stand_data)
 
     q, dq, t, stand_data = velocity_control(stand_data, motor, sensors, 0)
