@@ -24,6 +24,8 @@ int main()
 {  
   while (1)
   {
+
+    // printf("%-20s\n", "this is a test");
     // float force_A = force_sensor_A.read();
     // float force_B = force_sensor_B.read();
 

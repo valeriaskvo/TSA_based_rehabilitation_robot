@@ -1,3 +1,4 @@
+from fileinput import filename
 import numpy as np
 import matplotlib.pyplot as plt
 import csv
@@ -32,7 +33,8 @@ def load_data(path):
 path = "/home/valeria/TSA_based_rehabilitation_robot/Control_and_experiments/Exoskeleton_experiments/experiment_results/Lever_Stand_experiments/"
 # filename = "Current_300_weight_0.csv"
 # filename = "Current_150_weight_1_25.csv"
-filename = "Velocity_25_weight_3_5.csv"
+# filename = "Velocity_25_weight_3_5.csv"
+filename = "Exo_study_Velocity_25_1.csv"
 
 headers, data = load_data(path+filename)
 for i in range(len(headers)):
@@ -55,7 +57,7 @@ idx_theta = 2
 idx_dtheta = 3
 idx_tau = 5
 idx_alpha = 6
-idx_F_tsa = 7
+idx_F_tsa = 8
 idx_F_lever = 10
 
 t = data[:,idx_t]
@@ -71,17 +73,35 @@ q_des = data[:,11]
 dq_des = data[:,12]
 I_des = data[:,14]
 
-plt.subplot(3,1,1)
-plt.plot(np.rad2deg(alpha),theta/(2*np.pi) )
-plt.ylabel('Theta motor')
+# plt.subplot(3,1,1)
+# plt.plot(np.rad2deg(alpha),theta/(2*np.pi) )
+# plt.ylabel('Theta motor')
 
-plt.subplot(3,1,2)
-plt.plot(np.rad2deg(alpha),dtheta)
-plt.ylabel('Motor angular velocity')
+# plt.subplot(3,1,2)
+# plt.plot(np.rad2deg(alpha),dtheta)
+# plt.ylabel('Motor angular velocity')
 
-plt.subplot(3,1,3)
-plt.plot(np.rad2deg(alpha),F_tsa/9.8)
-plt.ylabel('Force sensor')
+# plt.subplot(3,1,3)
+# plt.plot(np.rad2deg(alpha),F_tsa/9.8)
+# plt.ylabel('Force sensor')
+# plt.show()
+
+
+plt.subplot(4,1,1)
+plt.plot(t,dtheta/(2*np.pi) )
+plt.ylabel('Motor velocity [rev/sec]')
+
+plt.subplot(4,1,2)
+plt.plot(t,F_tsa/9.8)
+plt.ylabel('Force sensor TSA [kg]')
+
+plt.subplot(4,1,3)
+plt.plot(t,F_lever/9.8)
+plt.ylabel('Force sensor lever [kg]')
+
+plt.subplot(4,1,4)
+plt.plot(t,np.rad2deg(alpha))
+plt.ylabel('Lever angle [deg]')
 plt.show()
 
 # n = 100
