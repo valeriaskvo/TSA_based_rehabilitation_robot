@@ -70,41 +70,48 @@ bus = CAN_Bus(interface = motor_param['interface'])
 calib_data = load_obj("calib_data")
 print(calib_data)
 
-motor = GyemsDRC(can_bus=bus, device_id=motor_param['id'])
-motor.set_radians()
-motor.current_limit = motor_param['current_limit']
-motor.enable()
+calib_data["motor_K"] = calib_data["motor_K_34"]
+print(calib_data)
+save_obj(calib_data,"calib_data")
 
-tf = 10
+# motor = GyemsDRC(can_bus=bus, device_id=motor_param['id'])
+# motor.set_radians()
+# motor.current_limit = motor_param['current_limit']
+# motor.enable()
 
-t0 = perf_counter()
-t = 0
-q_des = np.pi/2
+# tf = 10
 
-# m = [(16 + 24 + 102 + 99*2)*10**(-3), (16 + 24 + 102 + 99)*10**(-3), (16 + 24 + 102)*10**(-3)]
-# l = 100 *10**(-3)
+# t0 = perf_counter()
+# t = 0
+# q_des = np.pi/2
 
-m = [120 * 10**(-3), 2*120 * 10**(-3), 3*120 * 10**(-3)]
-l = [100 *10**(-3), 150 *10**(-3)]
+# # m = [(16 + 24 + 102 + 99*2)*10**(-3), (16 + 24 + 102 + 99)*10**(-3), (16 + 24 + 102)*10**(-3)]
+# # l = 100 *10**(-3)
 
-I_data, q_data, m_data = [], [], []
-try:
-    for j in range(len(l)):
-        print("Put the weights on L=", l[j]*10**3, "mm")
-        for i in range(len(m)):
-            _ = input("Put weight "+str(i+1)+" on pendulum")
-            I_data, q_data, m_data = velocity_control(I_data, q_data, m_data, motor, q_des, m[i])
-            k = calculate_K(I_data, q_data, m_data, l[j])
-            print("K = ", k)
-            calib_data["motor_K"] = k
-            save_obj(calib_data,"calib_data")
+# # m = [120 * 10**(-3), 2*120 * 10**(-3), 3*120 * 10**(-3)]
+# m = [ 57* 10**(-3), 2*57 * 10**(-3), 137* 10**(-3), (2*57 +137) * 10**(-3)]
+# l = [100 *10**(-3), 150 *10**(-3)]
 
-except KeyboardInterrupt:
-    print("Motor stop!")
-finally:
-    # velocity_control(I_data, q_data, motor, 0)
-    motor.set_current(0)
-    motor.disable()
+# calib_data["motor_K_49"] = calib_data["motor_K"]
+
+# I_data, q_data, m_data = [], [], []
+# try:
+#     for j in range(len(l)):
+#         print("Put the weights on L=", l[j]*10**3, "mm")
+#         for i in range(len(m)):
+#             _ = input("Put weight "+str(i+1)+" on pendulum")
+#             I_data, q_data, m_data = velocity_control(I_data, q_data, m_data, motor, q_des, m[i])
+#             k = calculate_K(I_data, q_data, m_data, l[j])
+#             print("K = ", k)
+#             calib_data["motor_K_34"] = k
+#             save_obj(calib_data,"calib_data")
+
+# except KeyboardInterrupt:
+#     print("Motor stop!")
+# finally:
+#     # velocity_control(I_data, q_data, motor, 0)
+#     motor.set_current(0)
+#     motor.disable()
         
-    save_obj(calib_data,"calib_data")
+#     save_obj(calib_data,"calib_data")
 
