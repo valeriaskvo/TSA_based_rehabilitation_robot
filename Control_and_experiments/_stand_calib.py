@@ -38,7 +38,7 @@ def run_stand(stand_param):
 stand_param = {'interface': 'can0', 'id_motor': 0x141, 'current_limit': 400}
 motor, sensors = run_stand(stand_param)
 
-calibration_speed = 70
+calibration_speed = 25
 
 moving_threshold = 3
 time_threshold = 1
