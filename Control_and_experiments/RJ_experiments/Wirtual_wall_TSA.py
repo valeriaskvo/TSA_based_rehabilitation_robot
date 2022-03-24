@@ -1,5 +1,7 @@
 from cmath import pi
 import sys
+
+from pyrsistent import v
 sys.path.append('/home/valeria/TSA_based_rehabilitation_robot/Control_and_experiments')
 
 from rj_stand import Stand_RJ
@@ -11,28 +13,26 @@ def jacobian_TSA(state, calib_data):
         q = pi
     else:
         q = state["q"]
-    
+
     x = state["x"]
     J = q*calib_data["r"]**2/(calib_data["R"]*(calib_data["L"]-x))
     return J
 
 def rj_position_control(phi_des, dphi_des, Kp, state, calib_data):
-    pass
-
-def virtual_wall(phi_des, K, K_force, state, calib_data):
-    tau_des = K * (phi_des - state["phi"])
-    if state["F_hand"] < 2:
-        tau_hand = 0
-    else:
-        tau_hand = state["F_hand"] * calib_data["l"]
     J = jacobian_TSA(state, calib_data)
-    tau_motor = K_force*(tau_des - tau_hand) / J
-    return tau_motor
+    dq = (dphi_des + Kp * (phi_des - state["phi"])) / J
+    return dq
+
+def virtual_wall(phi_des, impidance, state, calib_data):
+    tau = state["F_hand"] * calib_data ["l"]
+    phi = phi_des - tau/impidance["k"]
+
+    return phi
 
 
 
 path = "RJ_experiments/Results/"
-filename = "wirtual_wall_1"
+filename = "wirtual_wall_k_2000_1"
 
 stand_rj = Stand_RJ()
 stand_rj.force_sensor_initialization()
@@ -40,37 +40,38 @@ stand_rj.dont_collect_data()
 
 calib_data = stand_rj.calib_data
 
-phi_des = np.deg2rad(90)
-K = 5
-K_force = 10
-tn = 10
+phi_des = np.deg2rad(80)
 
-nominal_velocity = 50
+impidance = {"m": 1,
+             "b": 2,
+             "k": 2000}
 
-desired_data = {"t":[], "tau":[], "phi":[]}
+Kp = 15
+tn = 15
+
+desired_data = {"t":[], "phi":[]}
 
 try:
     while stand_rj.state["phi"] < phi_des:
-        stand_rj.motor_set_speed(nominal_velocity)
+        dq = rj_position_control(phi_des, 0, Kp, stand_rj.state, calib_data)
+        stand_rj.motor_set_speed(dq)
+    stand_rj.motor.pause()
 
-    print("\nWirtual wall is running!!!!\n Save yourself!\n")
-
+    print("\nStand at the desired position!\n")
+    input("Press any key to continue...")
     stand_rj.collect_data()
-
     t0 = perf_counter()
     t = 0
     while t < tn:
-        tau_motor = virtual_wall(phi_des, K, K_force, stand_rj.state, calib_data)
+        phi_wall = virtual_wall(phi_des, impidance, stand_rj.state, calib_data)
+        print("t:",t, "[sec], phi:", np.rad2deg(phi_wall),"[deg]")
+        dq = rj_position_control(phi_wall, 0, Kp, stand_rj.state, calib_data)
+        stand_rj.motor_set_speed(dq)
+        t = perf_counter() - t0
 
         desired_data["t"].append(stand_rj.state["t"])
-        desired_data["tau"].append(tau_motor)
-        desired_data["phi"].append(np.rad2deg(phi_des))
-
-        I = tau_motor/calib_data["motor_K"]
-        stand_rj.motor_set_current(I)
-
-        t = perf_counter()-t0
-            
+        desired_data["phi"].append(np.rad2deg(phi_wall))
+           
         
 except KeyboardInterrupt:
     stand_rj.motor_pause()

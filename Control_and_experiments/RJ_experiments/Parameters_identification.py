@@ -190,22 +190,30 @@ J = q*calib_data["r"]**2*10**3/(calib_data["L"]-x)
 # plt.show()
 
 
-dx = np.diff(x)
-dq = np.diff(q)
-q = q[1:]
-x = x[1:]
+# dx = np.diff(x)
+# dq = np.diff(q)
+# q = q[1:]
+# x = x[1:]
 
-J = q*calib_data["r"]**2/(calib_data["L"]-x)
-dx_check = J*dq
+# J = q*calib_data["r"]**2/(calib_data["L"]-x)
+# dx_check = J*dq
 
-plt.plot(x, dx, color="green")
-plt.plot(x, dx_check, color="red")
-plt.title("check Jacobian by linear velocity")
-plt.show()
+# plt.plot(x, dx, color="green")
+# plt.plot(x, dx_check, color="red")
+# plt.title("check Jacobian by linear velocity")
+# plt.show()
 
-dq_check = dx/J
-plt.plot(x, dq, color="green")
-plt.plot(x, dq_check, color="red", alpha = 0.5)
-plt.title("check Jacobian by motor velocity")
+# dq_check = dx/J
+# plt.plot(x, dq, color="green")
+# plt.plot(x, dq_check, color="red", alpha = 0.5)
+# plt.title("check Jacobian by motor velocity")
+# plt.show()
+
+headers, data = load_data_csv(path+"wirtual_wall_1")
+t = data[:, 1]
+dt = np.diff(t)
+print(np.mean(dt))
+
+plt.plot(t[1:], dt)
 plt.show()
 
