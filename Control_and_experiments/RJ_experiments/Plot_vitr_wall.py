@@ -96,21 +96,21 @@ for key in data:
 #         'figure.subplot.bottom' : 0.2,
 #         'figure.subplot.top' :    0.87})
 
-# fig, ax = plt.subplots(figsize=(5, 3))
+fig, ax = plt.subplots(figsize=(5, 3))
 
-# for key in data:
-#     phi = data[key][0]
-#     tau = data[key][1]
-#     ax.plot(np.rad2deg(phi), tau, color=colormap[key][1],
-#                                   label = colormap[key][0])
+for key in data:
+    phi = data[key][0]
+    tau = data[key][1]
+    ax.plot(np.rad2deg(phi), tau, color=colormap[key][1],
+                                  label = colormap[key][0])
 
-# ax.set_ylabel(ylabel=r'Motor torque $K_mI_m$ [Nm]')
-# ax.set_xlabel(xlabel=r'Joint angle $\varphi$ [deg]')
+ax.set_ylabel(ylabel=r'Motor torque $u$ [Nm]')
+ax.set_xlabel(xlabel=r'Joint angle $\varphi$ [deg]')
 
-# ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1),
-#           bbox_transform=fig.transFigure , ncol=3)
-# plt.savefig(path+"Figure_1.pdf", dpi=300)
-# plt.show()
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1),
+          bbox_transform=fig.transFigure , ncol=3)
+plt.savefig(path+"Figure_1.pdf", dpi=300)
+plt.show()
 
 
 # fig, ax = plt.subplots(figsize=(5, 3))
@@ -130,37 +130,37 @@ for key in data:
 # plt.savefig(path+"Figure_2.pdf", dpi=300)
 # plt.show()
 
-mpl.rc({'figure.subplot.left': 0.1,
-        'figure.subplot.right' :  0.83,
-        'figure.subplot.bottom' : 0.18,
-        'figure.subplot.top' :    0.87})
+# mpl.rc({'figure.subplot.left': 0.1,
+#         'figure.subplot.right' :  0.83,
+#         'figure.subplot.bottom' : 0.18,
+#         'figure.subplot.top' :    0.87})
 
-fig, ax = plt.subplots(figsize=(5, 3))
-ax_x = ax.twinx()
+# fig, ax = plt.subplots(figsize=(5, 3))
+# ax_x = ax.twinx()
 
-for key in data:
-    phi = data[key][0]
-    tau = data[key][1]
+# for key in data:
+#     phi = data[key][0]
+#     tau = data[key][1]
     
-    phi_hand = data[key][2]
-    tau_hand = data[key][3]
+#     phi_hand = data[key][2]
+#     tau_hand = data[key][3]
 
-    ax.plot(np.rad2deg(phi_hand), tau_hand, color = 'blue',
-                                            alpha = colormap[key][3],
-                                            linestyle = colormap[key][2],
-                                            label = colormap[key][0])
-    ax_x.plot(np.rad2deg(phi), tau, linewidth=2, color = 'red',
-                                                 alpha = colormap[key][3],
-                                                 linestyle = colormap[key][2],
-                                                 label = colormap[key][0])
+#     ax.plot(np.rad2deg(phi_hand), tau_hand, color = 'blue',
+#                                             alpha = colormap[key][3],
+#                                             linestyle = colormap[key][2],
+#                                             label = colormap[key][0])
+#     ax_x.plot(np.rad2deg(phi), tau, linewidth=2, color = 'red',
+#                                                  alpha = colormap[key][3],
+#                                                  linestyle = colormap[key][2],
+#                                                  label = colormap[key][0])
 
 
-ax.set_ylabel(ylabel=r'Handle torque $\tau_o$ [Nm]', color = 'tab:blue')
-ax_x.set_ylabel(r'Motor torque $K_mI_m$ [Nm]', color = 'tab:red')
-ax.set_xlabel(xlabel=r'Joint angle $\varphi$ [deg]')
+# ax.set_ylabel(ylabel=r'Handle torque $\tau_o$ [Nm]', color = 'tab:blue')
+# ax_x.set_ylabel(r'Motor torque $u$ [Nm]', color = 'tab:red')
+# ax.set_xlabel(xlabel=r'Joint angle $\varphi$ [deg]')
 
-ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1),
-          bbox_transform=fig.transFigure , ncol=3)
-plt.savefig(path+"Figure_3.pdf", dpi=300)
+# ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1),
+#           bbox_transform=fig.transFigure , ncol=3)
+# plt.savefig(path+"Figure_3.pdf", dpi=300)
 
-plt.show()
+# plt.show()
