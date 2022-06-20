@@ -32,7 +32,7 @@ def virtual_wall(phi_des, impidance, state, calib_data):
 
 
 path = "RJ_experiments/Results/"
-filename = "wirtual_wall_k_2000_1"
+filename = "wirtual_wall_k_2000_2"
 
 stand_rj = Stand_RJ()
 stand_rj.force_sensor_initialization()

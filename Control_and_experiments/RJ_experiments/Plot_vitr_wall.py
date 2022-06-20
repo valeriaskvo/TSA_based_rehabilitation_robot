@@ -81,11 +81,11 @@ experiment_name = "wirtual_wall_k_"
 colors = ['red', 'green', 'indigo', 'seagreen', 'saddlebrown']
 data = {"1000_1": None,
      "1500_1": None,
-     "2000_1": None}
+     "2000_2": None}
 
-colormap = {"1000_1": [r"$K_w$ = 1 $\frac{Nm}{rad}$", 'indigo', '-',0.3],
-            "1500_1": [r"$K_w$ = 1.5 $\frac{Nm}{rad}$", 'green', '--', 0.6],
-            "2000_1": [r"$K_w$ = 2 $\frac{Nm}{rad}$", 'red', '-.', 1]}
+colormap = {"1000_1": [r"$K_w$ = 1 $\frac{Nm}{rad}$", 'blue', '-',0.5],
+            "1500_1": [r"$K_w$ = 1.5 $\frac{Nm}{rad}$", 'green', '--', 0.75],
+            "2000_2": [r"$K_w$ = 2 $\frac{Nm}{rad}$", 'red', '-.', 1]}
 
 for key in data:
     phi_tau, tau_f, phi_tau_hand, tau_hand_f = data_processing(path+experiment_name+key)
@@ -96,21 +96,22 @@ for key in data:
 #         'figure.subplot.bottom' : 0.2,
 #         'figure.subplot.top' :    0.87})
 
-fig, ax = plt.subplots(figsize=(5, 3))
+# fig, ax = plt.subplots(figsize=(5, 3))
 
-for key in data:
-    phi = data[key][0]
-    tau = data[key][1]
-    ax.plot(np.rad2deg(phi), tau, color=colormap[key][1],
-                                  label = colormap[key][0])
+# for key in data:
+#     phi = data[key][0]
+#     tau = data[key][1]
+#     ax.plot(np.rad2deg(phi), tau, color=colormap[key][1],
+#                                   label = colormap[key][0],
+#                                   alpha = 0.8)
 
-ax.set_ylabel(ylabel=r'Motor torque $u$ [Nm]')
-ax.set_xlabel(xlabel=r'Joint angle $\varphi$ [deg]')
+# ax.set_ylabel(ylabel=r'Motor torque $u$ [Nm]')
+# ax.set_xlabel(xlabel=r'Joint angle $\varphi$ [deg]')
 
-ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1),
-          bbox_transform=fig.transFigure , ncol=3)
-plt.savefig(path+"Figure_1.pdf", dpi=300)
-plt.show()
+# ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1),
+#           bbox_transform=fig.transFigure , ncol=3)
+# plt.savefig(path+"Figure_1.png", dpi=300)
+# plt.show()
 
 
 # fig, ax = plt.subplots(figsize=(5, 3))
@@ -119,7 +120,8 @@ plt.show()
 #     phi = data[key][2]
 #     tau = data[key][3]
 #     ax.plot(np.rad2deg(phi), tau, color=colormap[key][1],
-#                                   label = colormap[key][0])
+#                                   label = colormap[key][0],
+#                                   alpha = 0.8)
 
 # ax.set_ylabel(ylabel=r'Handle torque $\tau_o$ [Nm]')
 # ax.set_xlabel(xlabel=r'Joint angle $\varphi$ [deg]')
@@ -127,40 +129,45 @@ plt.show()
 # ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1),
 #           bbox_transform=fig.transFigure , ncol=3)
 
-# plt.savefig(path+"Figure_2.pdf", dpi=300)
+# plt.savefig(path+"Figure_2.png", dpi=300)
 # plt.show()
 
-# mpl.rc({'figure.subplot.left': 0.1,
+# mpl.rc({'figure.subplot.left': 0.12,
 #         'figure.subplot.right' :  0.83,
 #         'figure.subplot.bottom' : 0.18,
 #         'figure.subplot.top' :    0.87})
 
-# fig, ax = plt.subplots(figsize=(5, 3))
-# ax_x = ax.twinx()
+fig, ax = plt.subplots(figsize=(5, 3))
+ax_x = ax.twinx()
 
-# for key in data:
-#     phi = data[key][0]
-#     tau = data[key][1]
+for key in data:
+    phi = data[key][0]
+    tau = data[key][1]
     
-#     phi_hand = data[key][2]
-#     tau_hand = data[key][3]
+    phi_hand = data[key][2]
+    tau_hand = data[key][3]
 
-#     ax.plot(np.rad2deg(phi_hand), tau_hand, color = 'blue',
-#                                             alpha = colormap[key][3],
-#                                             linestyle = colormap[key][2],
-#                                             label = colormap[key][0])
-#     ax_x.plot(np.rad2deg(phi), tau, linewidth=2, color = 'red',
-#                                                  alpha = colormap[key][3],
-#                                                  linestyle = colormap[key][2],
-#                                                  label = colormap[key][0])
+    print("K:", key)
+    print( "phi max:", np.rad2deg(np.max(phi)), "phi min:", np.rad2deg(np.min(phi)), "mean:", np.rad2deg(np.max(phi))-np.rad2deg(np.min(phi)))
+    print( "tau max:", np.max(tau), "tau min:", np.min(tau), "mean:", np.max(tau) - np.min(tau))
+    print( "tau handl max:", np.max(tau_hand), "tau hand min:", np.min(tau_hand), "mean:", np.max(tau_hand) - np.min(tau_hand))
+
+    ax.plot(np.rad2deg(phi_hand), tau_hand, color = 'indigo',
+                                            alpha = colormap[key][3],
+                                            linestyle = colormap[key][2],
+                                            label = colormap[key][0])
+    ax_x.plot(np.rad2deg(phi), tau, linewidth=2, color = 'red',
+                                                 alpha = colormap[key][3],
+                                                 linestyle = colormap[key][2],
+                                                 label = colormap[key][0])
 
 
-# ax.set_ylabel(ylabel=r'Handle torque $\tau_o$ [Nm]', color = 'tab:blue')
-# ax_x.set_ylabel(r'Motor torque $u$ [Nm]', color = 'tab:red')
-# ax.set_xlabel(xlabel=r'Joint angle $\varphi$ [deg]')
+ax.set_ylabel(ylabel=r'Handle torque $\tau_o$ [Nm]', color = 'indigo')
+ax_x.set_ylabel(r'Motor torque $u$ [Nm]', color = 'red')
+ax.set_xlabel(xlabel=r'Joint angle $\varphi$ [deg]')
 
-# ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1),
-#           bbox_transform=fig.transFigure , ncol=3)
-# plt.savefig(path+"Figure_3.pdf", dpi=300)
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1),
+          bbox_transform=fig.transFigure , ncol=3)
+plt.savefig(path+"Figure_3.png", dpi=300)
 
-# plt.show()
+plt.show()

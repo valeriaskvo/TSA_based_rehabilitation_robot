@@ -5,8 +5,8 @@ from rj_stand import Stand_RJ
 import numpy as np
 
 path = "RJ_experiments/Results/"
-# filename = "static_experiment_v_const_1"
-filename = "test"
+filename = "static_experiment_v_10_2"
+# filename = "test"
 
 stand_rj = Stand_RJ()
 stand_rj.get_state()
@@ -18,9 +18,9 @@ t = 0
 try:
     while stand_rj.state["phi"] < max_phi:
         stand_rj.motor_set_speed(nominal_velocity)
-        if stand_rj.state["t"]-t > 0.5:
-            print(stand_rj.state["F_hand"])
-            t = stand_rj.state["t"]
+        # if stand_rj.state["t"]-t > 0.5:
+        #     # print(stand_rj.state["F_hand"])
+        #     t = stand_rj.state["t"]
         
 except KeyboardInterrupt:
     stand_rj.motor_pause()

@@ -79,8 +79,12 @@ try:
         dt = dt + ti - t
         t = ti
         # msg = "Zero B: {:-f}, Force B: {:-f}".format(force_b, force_b*calib_data["force_B"]/9.8)
-        msg = "Force A: {:f}; Force B: {:-f}; Linear encoder: {:-f}; Angular encoder: {:-f}".format(force_a*calib_data["force_A"]/9.8, force_b*calib_data["force_B"]/9.8, linear_displacement, rotation_angle*180/3.1415926)
+        msg = "Force A: {:f}; Force B: {:-f}; Linear encoder: {:-f}; Angular encoder: {:-f}".format(force_a*calib_data["force_A"], force_b*calib_data["force_B"], linear_displacement, rotation_angle*180/3.1415926)
+        
+        # msg = "Linear encoder: {:-f}; Angular encoder: {:-f}".format(linear_displacement, rotation_angle*180/3.1415926)
         print(msg)
+
+        # print(rotation_angle*180/3.1415926)
 
         sleep(0.1)
 except KeyboardInterrupt:

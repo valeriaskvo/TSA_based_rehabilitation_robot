@@ -1,10 +1,11 @@
+import numpy as np
 from can import CAN_Bus
 from math import pi
 from struct import unpack
 
 def rot_lin_scale(sensor):
     if sensor == "rot":
-        return 1 / 1024 * 2 * pi / 4
+        return 2*pi /(2048 * 4)
     else:
         return 1 / 360 * 25.4 / 4
 
@@ -52,7 +53,7 @@ class SensorRJ:
         _, _, can_data = self.reciver()
         sensor_a = unpack('h',can_data[:2])
         sensor_b = unpack('h',can_data[2:4])
-        
+
         self.state["encoder_a"] = sensor_a[0] * self.scale["encoder_a"]
         self.state["encoder_b"] = sensor_b[0] * self.scale["encoder_b"]
         return self.state["encoder_a"], self.state["encoder_b"]

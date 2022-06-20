@@ -34,7 +34,7 @@ motor.current_limit = motor_param['current_limit']
 motor.enable()
 print('Motor is enable')
 
-goal_current = 50
+goal_current = 100
 goal_angle = 50*2*pi
 time_to_sleep = 5
 

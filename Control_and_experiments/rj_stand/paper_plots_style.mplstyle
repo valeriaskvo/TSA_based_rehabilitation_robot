@@ -1,0 +1,19 @@
+lines.linewidth :   2
+font.size:          12.0
+font.family:        serif
+text.usetex:        True
+axes.grid:          True
+grid.color:         black
+grid.linestyle:     --
+grid.linewidth:     1
+grid.alpha:         0.7
+axes.labelsize :    11
+
+figure.subplot.left:   0.12   # the left side of the subplots of the figure
+figure.subplot.right:  0.9  # the right side of the subplots of the figure
+figure.subplot.bottom: 0.18   # the bottom of the subplots of the figure
+figure.subplot.top:    0.87   # the top of the subplots of the figure
+
+savefig.format:        png
+
+legend.fontsize:       small
